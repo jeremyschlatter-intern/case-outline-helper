@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CaseOutliner — Criminal Procedure Study Tool</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f7f5f2;
+    --surface: #ffffff;
+    --border: #e2ddd5;
+    --text: #2c2416;
+    --text-secondary: #6b5e4f;
+    --accent: #8b5e3c;
+    --accent-light: #d4a574;
+    --accent-bg: #f5ebe0;
+    --tag-4th: #2d6a4f;
+    --tag-4th-bg: #d8f3dc;
+    --tag-5th: #1d3557;
+    --tag-5th-bg: #d6e4f0;
+    --tag-6th: #6b2737;
+    --tag-6th-bg: #f2d0d9;
+    --tag-14th: #5a189a;
+    --tag-14th-bg: #e8d5f5;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  header {
+    background: linear-gradient(135deg, #3c2415 0%, #5a3a28 100%);
+    color: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  header h1 {
+    font-family: 'Lora', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  header p {
+    opacity: 0.8;
+    font-size: 0.85rem;
+    margin-top: 0.2rem;
+  }
+
+  .export-btn {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 0.5rem 1.1rem;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+  }
+
+  .export-btn:hover {
+    background: rgba(255,255,255,0.25);
+    border-color: rgba(255,255,255,0.5);
+  }
+
+  .export-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .app-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr 400px;
+    height: calc(100vh - 68px);
+  }
+
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 1rem 0;
+  }
+
+  .sidebar h2 {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+    padding: 0.5rem 1.2rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .topic-item {
+    padding: 0.5rem 1.2rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .topic-item:hover { background: var(--accent-bg); }
+  .topic-item.active {
+    background: var(--accent-bg);
+    border-left-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .topic-item .arrow {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s;
+    width: 12px;
+    flex-shrink: 0;
+  }
+
+  .topic-item.expanded .arrow { transform: rotate(90deg); }
+
+  .subtopic-item {
+    padding: 0.35rem 1.2rem 0.35rem 2.8rem;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+
+  .subtopic-item:hover { background: var(--accent-bg); color: var(--text); }
+  .subtopic-item.active {
+    background: var(--accent-bg);
+    border-left-color: var(--accent-light);
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .subtopics { display: none; }
+  .subtopics.open { display: block; }
+
+  .main-panel {
+    overflow-y: auto;
+    padding: 1.5rem;
+  }
+
+  .main-panel h2 {
+    font-family: 'Lora', serif;
+    font-size: 1.3rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .main-panel .subtitle {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.2rem;
+  }
+
+  .case-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: var(--shadow);
+  }
+
+  .case-card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-light);
+  }
+
+  .case-card.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), var(--shadow-lg);
+  }
+
+  .case-card .case-name {
+    font-family: 'Lora', serif;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .case-card .case-cite {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.4rem;
+  }
+
+  .case-card .case-snippet {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .tags {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 0.68rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .tag-4th { background: var(--tag-4th-bg); color: var(--tag-4th); }
+  .tag-5th { background: var(--tag-5th-bg); color: var(--tag-5th); }
+  .tag-6th { background: var(--tag-6th-bg); color: var(--tag-6th); }
+  .tag-14th { background: var(--tag-14th-bg); color: var(--tag-14th); }
+  .tag-landmark { background: #fff3cd; color: #856404; }
+
+  .detail-panel {
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 1.5rem;
+  }
+
+  .detail-panel .empty-state {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-top: 4rem;
+    font-size: 0.9rem;
+  }
+
+  .detail-panel .empty-state .icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.4;
+  }
+
+  .detail-header {
+    margin-bottom: 1.2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .detail-header h3 {
+    font-family: 'Lora', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .detail-header .cite {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.2rem;
+  }
+
+  .detail-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+  }
+
+  .meta-item {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .meta-item strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .detail-section {
+    margin-bottom: 1.2rem;
+  }
+
+  .detail-section h4 {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+  }
+
+  .detail-section p, .detail-section ul {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .detail-section ul {
+    padding-left: 1.2rem;
+  }
+
+  .detail-section li {
+    margin-bottom: 0.3rem;
+  }
+
+  .holding-box {
+    background: var(--accent-bg);
+    border-left: 3px solid var(--accent);
+    padding: 0.8rem 1rem;
+    border-radius: 0 6px 6px 0;
+    font-family: 'Lora', serif;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  .quote-box {
+    background: #f8f6f3;
+    border-left: 3px solid #c4b5a3;
+    padding: 0.6rem 0.9rem;
+    border-radius: 0 6px 6px 0;
+    font-family: 'Lora', serif;
+    font-size: 0.84rem;
+    line-height: 1.5;
+    font-style: italic;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .quote-box .attribution {
+    font-style: normal;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    color: #999;
+    margin-top: 0.3rem;
+  }
+
+  .related-cases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .related-case {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .related-case:hover {
+    border-color: var(--accent-light);
+    background: var(--accent-bg);
+  }
+
+  .add-note {
+    width: 100%;
+    border: 1px dashed var(--border);
+    background: transparent;
+    padding: 0.6rem;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+  }
+
+  .add-note:hover {
+    border-color: var(--accent-light);
+    color: var(--text);
+    background: var(--accent-bg);
+  }
+
+  textarea.note-input {
+    width: 100%;
+    border: 1px solid var(--accent-light);
+    background: var(--accent-bg);
+    padding: 0.6rem;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    color: var(--text);
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+  }
+
+  .note-text {
+    font-size: 0.82rem;
+    color: var(--text);
+    background: #fafaf7;
+    padding: 0.6rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    white-space: pre-wrap;
+    cursor: pointer;
+  }
+
+  .note-text:hover {
+    border-color: var(--accent-light);
+  }
+
+  .search-bar {
+    padding: 0.75rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-bar input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .search-bar input:focus {
+    border-color: var(--accent);
+  }
+
+  .search-bar input::placeholder {
+    color: #b0a898;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>CaseOutliner</h1>
+    <p>Criminal Procedure — Case Law Study Tool</p>
+  </div>
+  <button class="export-btn" onclick="exportToWord()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    Export to PDF
+  </button>
+</header>
+
+<div class="app-layout">
+  <div class="sidebar">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search cases..." oninput="filterCases(this.value)">
+    </div>
+    <h2>Outline Topics</h2>
+    <div id="topicTree"></div>
+  </div>
+
+  <div class="main-panel" id="mainPanel">
+    <h2 id="topicTitle">All Cases</h2>
+    <p class="subtitle" id="topicSubtitle">Select a topic from the sidebar to filter, or browse all cases below.</p>
+    <div id="caseList"></div>
+  </div>
+
+  <div class="detail-panel" id="detailPanel">
+    <div class="empty-state">
+      <div class="icon">&#9878;</div>
+      <p>Select a case to view its<br>outline and key details</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  topics: [
+    {
+      name: "Fourth Amendment — Search & Seizure",
+      subtopics: ["Reasonable Expectation of Privacy", "Warrant Requirement", "Exceptions to Warrant Requirement", "Stop and Frisk", "Exclusionary Rule"]
+    },
+    {
+      name: "Fifth Amendment — Self-Incrimination",
+      subtopics: ["Miranda Rights", "Custodial Interrogation", "Voluntariness of Confessions", "Right to Silence"]
+    },
+    {
+      name: "Sixth Amendment — Right to Counsel",
+      subtopics: ["Right to Appointed Counsel", "Effective Assistance of Counsel", "Right at Critical Stages"]
+    },
+    {
+      name: "Fourteenth Amendment — Due Process",
+      subtopics: ["Incorporation Doctrine", "Identification Procedures", "Prosecutorial Misconduct", "Burden of Proof"]
+    }
+  ],
+  cases: [
+    {
+      name: "Mapp v. Ohio",
+      cite: "367 U.S. 643 (1961)",
+      year: 1961,
+      topic: "Fourth Amendment — Search & Seizure",
+      subtopic: "Exclusionary Rule",
+      tags: ["4th Amend", "Landmark"],
+      vote: "6-3",
+      author: "Justice Clark",
+      facts: "On May 23, 1957, three Cleveland police officers arrived at Dollree Mapp's home based on a tip that a suspect in a recent bombing was hiding there, along with illegal betting equipment. Mapp refused to admit them without a warrant after calling her attorney. Three hours later, additional officers arrived and forced open a door. When Mapp demanded to see a warrant, an officer held up a paper claiming it was one; Mapp grabbed it and placed it in her bosom. Officers retrieved it and handcuffed her for being 'belligerent.' They searched the entire house — including dresser drawers, closets, suitcases, a child's bedroom, and the basement — finding obscene materials but no bombing suspect or betting equipment. No valid warrant was ever produced at trial. Mapp was convicted of possessing obscene materials under Ohio law.",
+      proceduralHistory: "Mapp was convicted in the Court of Common Pleas of Cuyahoga County. The Ohio Court of Appeals affirmed. The Ohio Supreme Court affirmed (finding the methods used to obtain evidence 'unlawful' but holding exclusion was not constitutionally required). The U.S. Supreme Court granted certiorari.",
+      holding: "The exclusionary rule — prohibiting the use of illegally obtained evidence in criminal proceedings — applies to state courts through the Fourteenth Amendment's Due Process Clause, overruling Wolf v. Colorado (1949) on this point.",
+      reasoning: [
+        "Extended the federal exclusionary rule from Weeks v. United States (1914) to the states",
+        "Without the rule, the Fourth Amendment's protection is reduced to 'a form of words' — toothless without enforcement",
+        "Constitutional rights must have enforceable remedies; allowing illegally seized evidence encourages lawless police conduct",
+        "Rejected the 'silver platter' doctrine that had allowed state-seized evidence to be used in federal courts",
+        "Other remedies (civil suits, internal discipline) had proven ineffective at deterring illegal searches",
+        "The Court found no justification for treating state and federal defendants differently"
+      ],
+      keyQuotes: [
+        { text: "Nothing can destroy a government more quickly than its failure to observe its own laws, or worse, its disregard of the charter of its own existence.", attribution: "Justice Clark, majority opinion" },
+        { text: "Our decision, founded on reason and truth, gives to the individual no more than that which the Constitution guarantees him, to the police officer no less than that to which honest law enforcement is entitled.", attribution: "Justice Clark, majority opinion" }
+      ],
+      significance: "Foundational case establishing that states cannot use evidence obtained in violation of the Fourth Amendment. Created the primary enforcement mechanism for search and seizure protections at both federal and state levels. Before Mapp, about half the states had rejected the exclusionary rule.",
+      dissent: "Justice Harlan, joined by Justices Frankfurter and Whittaker, dissented. Harlan argued that Wolf v. Colorado should not be overruled, that the Court was reaching a constitutional question not briefed by the parties (the case was argued on First Amendment obscenity grounds), and that states should be free to adopt their own remedies for Fourth Amendment violations. He criticized the majority for 'reaching out' to decide an issue not presented.",
+      relatedCases: ["Weeks v. United States (1914)", "Wolf v. Colorado (1949)", "Elkins v. United States (1960)", "United States v. Leon (1984)"]
+    },
+    {
+      name: "Terry v. Ohio",
+      cite: "392 U.S. 1 (1968)",
+      year: 1968,
+      topic: "Fourth Amendment — Search & Seizure",
+      subtopic: "Stop and Frisk",
+      tags: ["4th Amend", "Landmark"],
+      vote: "8-1",
+      author: "Chief Justice Warren",
+      facts: "On October 31, 1963, Detective Martin McFadden, a 39-year veteran of the Cleveland Police Department, observed two men — John Terry and Richard Chilton — standing on a street corner. Over a period of about 10-12 minutes, McFadden watched each man walk past a store window, peer inside, walk on, turn around, walk back past the store, and rejoin the other at the corner. They repeated this ritual about five or six times each. A third man, Katz, joined them briefly, then left. McFadden, suspecting the men were 'casing a job' for a robbery, followed them. When the three men reunited, McFadden approached, identified himself as a police officer, and asked their names. When the men mumbled, McFadden grabbed Terry, spun him around, and patted down the outside of his clothing. He felt a pistol in Terry's overcoat breast pocket. Unable to remove it by reaching in, he ordered all three into the store, removed Terry's overcoat, and retrieved a .38-caliber revolver. A pat-down of Chilton revealed another revolver. Katz had no weapon. Terry and Chilton were charged with carrying concealed weapons.",
+      proceduralHistory: "The trial court denied Terry's motion to suppress, distinguishing between a 'stop' and an 'arrest' and between a 'frisk' and a 'search.' Terry was convicted. The Ohio Court of Appeals affirmed. The Ohio Supreme Court dismissed the appeal. The U.S. Supreme Court granted certiorari.",
+      holding: "A police officer may perform a brief investigatory stop and a limited pat-down for weapons when the officer has reasonable suspicion, based on specific and articulable facts, that criminal activity is afoot and the suspect may be armed and presently dangerous.",
+      reasoning: [
+        "The Fourth Amendment applies to 'stop and frisk' encounters — they constitute 'seizures' and 'searches' under the Amendment",
+        "However, the Court adopted a balancing test: the governmental interest in crime prevention and officer safety must be weighed against the intrusion on individual liberty",
+        "Reasonable suspicion (less than probable cause) is sufficient to justify brief investigatory stops",
+        "Pat-downs must be limited to outer clothing to discover weapons that could harm the officer — not a general search for evidence",
+        "The test is objective: 'would the facts available to the officer at the moment of the seizure or the search warrant a man of reasonable caution in the belief' that action was appropriate?",
+        "McFadden's 39 years of experience and his specific observations met the reasonable suspicion standard"
+      ],
+      keyQuotes: [
+        { text: "The police officer must be able to point to specific and articulable facts which, taken together with rational inferences from those facts, reasonably warrant that intrusion.", attribution: "Chief Justice Warren, majority opinion" },
+        { text: "It is simply fantastic to urge that a procedure performed in public by a policeman while the citizen stands helpless, perhaps facing a wall with his hands raised, is a 'petty indignity.'", attribution: "Chief Justice Warren, majority opinion" }
+      ],
+      significance: "Created the 'Terry stop' doctrine — the foundational legal framework for police stops based on reasonable suspicion rather than probable cause. Defined both the justification for and limits on stop-and-frisk encounters. The case launched a vast body of Fourth Amendment jurisprudence on what constitutes 'reasonable suspicion.'",
+      dissent: "Justice Douglas was the lone dissenter, arguing that probable cause should be required for any search or seizure. He warned that granting police the power to stop and frisk on less than probable cause would give them 'greater authority to make a seizure and conduct a search than a judge has to authorize such action.'",
+      relatedCases: ["Adams v. Williams (1972)", "Illinois v. Wardlow (2000)", "Hiibel v. Sixth Judicial District Court (2004)", "Utah v. Strieff (2016)"]
+    },
+    {
+      name: "Katz v. United States",
+      cite: "389 U.S. 347 (1967)",
+      year: 1967,
+      topic: "Fourth Amendment — Search & Seizure",
+      subtopic: "Reasonable Expectation of Privacy",
+      tags: ["4th Amend", "Landmark"],
+      vote: "7-1",
+      author: "Justice Stewart",
+      facts: "Charles Katz was a well-known Los Angeles handicapper who used a public telephone booth on Sunset Boulevard to transmit betting information to clients in other cities. FBI agents, suspecting Katz of illegal gambling transmissions, attached an electronic listening and recording device to the outside of the phone booth he regularly used. Over a period of about two weeks, the agents recorded Katz's end of telephone conversations. The recordings were used to convict Katz of transmitting wagering information by telephone in violation of federal law. The government argued no warrant was needed because (1) the booth was partly glass and Katz was visible inside, (2) the listening device was placed on the outside of the booth (no physical trespass), and (3) a public phone booth is not a constitutionally protected area.",
+      proceduralHistory: "Katz was convicted in the U.S. District Court for the Southern District of California. The Ninth Circuit Court of Appeals affirmed, holding that no Fourth Amendment violation occurred because there was no physical penetration of the telephone booth. The U.S. Supreme Court granted certiorari.",
+      holding: "The Fourth Amendment protects people, not places. A search occurs when the government violates a person's 'reasonable expectation of privacy,' regardless of whether a physical trespass occurs. The government's electronic surveillance of Katz's phone calls constituted a search and seizure under the Fourth Amendment and required a warrant.",
+      reasoning: [
+        "Overruled the trespass doctrine from Olmstead v. United States (1928) and Goldman v. United States (1942)",
+        "The Fourth Amendment 'protects people, not places' — what a person seeks to preserve as private, even in a publicly accessible area, may be constitutionally protected",
+        "The government's activities 'violated the privacy upon which [Katz] justifiably relied' while using the phone booth",
+        "The fact that the electronic device did not penetrate the wall of the booth is irrelevant — the Fourth Amendment cannot turn on 'the presence or absence of a physical intrusion'",
+        "Justice Harlan's concurrence established the two-part 'reasonable expectation of privacy' test that became the dominant framework: (1) the person must exhibit an actual (subjective) expectation of privacy, and (2) that expectation must be one that society is prepared to recognize as reasonable"
+      ],
+      keyQuotes: [
+        { text: "The Fourth Amendment protects people, not places. What a person knowingly exposes to the public, even in his own home or office, is not a subject of Fourth Amendment protection. But what he seeks to preserve as private, even in an area accessible to the public, may be constitutionally protected.", attribution: "Justice Stewart, majority opinion" },
+        { text: "Wherever a man may be, he is entitled to know that he will remain free from unreasonable searches and seizures.", attribution: "Justice Stewart, majority opinion" }
+      ],
+      significance: "Revolutionized Fourth Amendment analysis by shifting from a property/trespass-based framework to a privacy-based framework. The Harlan concurrence's 'reasonable expectation of privacy' test became the dominant analytical framework for Fourth Amendment cases for the next 50+ years, applied to everything from thermal imaging to cell phone tracking.",
+      dissent: "Justice Black dissented, arguing the Fourth Amendment's language ('persons, houses, papers, and effects') was meant to protect tangible things and should not be extended to eavesdropping on conversations. He contended the majority was effectively rewriting the Constitution.",
+      relatedCases: ["Olmstead v. United States (1928)", "Smith v. Maryland (1979)", "Kyllo v. United States (2001)", "United States v. Jones (2012)", "Carpenter v. United States (2018)"]
+    },
+    {
+      name: "Miranda v. Arizona",
+      cite: "384 U.S. 436 (1966)",
+      year: 1966,
+      topic: "Fifth Amendment — Self-Incrimination",
+      subtopic: "Miranda Rights",
+      tags: ["5th Amend", "Landmark"],
+      vote: "5-4",
+      author: "Chief Justice Warren",
+      facts: "On March 13, 1963, Ernesto Miranda was arrested at his home in Phoenix, Arizona, on suspicion of kidnapping and rape. He was taken to a police station, placed in an interrogation room, and questioned by two officers for approximately two hours. Miranda was not informed of his right to have an attorney present or his right to remain silent before or during the interrogation. At the end of the questioning, Miranda signed a written confession that included a typed paragraph stating the confession was made 'with full knowledge of my legal rights, understanding any statement I make may be used against me.' The confession was used at trial, and Miranda was convicted of kidnapping and rape, sentenced to 20-30 years on each count. The case was consolidated with three companion cases (Vignera v. New York, Westover v. United States, and California v. Stewart) involving similar custodial interrogation issues.",
+      proceduralHistory: "Miranda was convicted in the Superior Court of Arizona, Maricopa County. The Arizona Supreme Court affirmed the conviction, holding that Miranda's constitutional rights were not violated because he did not specifically request an attorney. The U.S. Supreme Court granted certiorari and consolidated the case with three companion cases.",
+      holding: "Prior to any custodial interrogation, a suspect must be clearly informed: (1) of the right to remain silent, (2) that any statement made can and will be used against them in court, (3) of the right to have an attorney present during questioning, and (4) that if they cannot afford an attorney, one will be appointed before questioning if they so desire. If the suspect indicates at any point that they wish to remain silent or want an attorney, interrogation must cease.",
+      reasoning: [
+        "Custodial interrogation is inherently coercive: the 'police-dominated atmosphere' generates compelling pressures that 'work to undermine the individual's will to resist'",
+        "The Court reviewed police interrogation manuals (including Inbau & Reid) in detail, documenting psychological tactics designed to overbear a suspect's will",
+        "The Fifth Amendment privilege against compulsory self-incrimination requires adequate procedural safeguards when a suspect is in custody",
+        "Warnings are necessary to dispel the compulsion inherent in custodial settings and make the suspect aware of rights they may not know",
+        "A suspect may waive these rights, but any waiver must be made voluntarily, knowingly, and intelligently — a heavy burden rests on the government to demonstrate waiver",
+        "Silence after warnings cannot be used as evidence of guilt",
+        "The decision does not prevent voluntary, uncoerced statements; it only requires that suspects be informed of their rights in custodial settings"
+      ],
+      keyQuotes: [
+        { text: "Prior to any questioning, the person must be warned that he has a right to remain silent, that any statement he does make may be used as evidence against him, and that he has a right to the presence of an attorney, either retained or appointed.", attribution: "Chief Justice Warren, majority opinion" },
+        { text: "If the individual indicates in any manner, at any time prior to or during questioning, that he wishes to remain silent, the interrogation must cease.", attribution: "Chief Justice Warren, majority opinion" },
+        { text: "The prosecution may not use statements, whether exculpatory or inculpatory, stemming from custodial interrogation of the defendant unless it demonstrates the use of procedural safeguards effective to secure the privilege against self-incrimination.", attribution: "Chief Justice Warren, majority opinion" }
+      ],
+      significance: "Established the famous 'Miranda warnings' required before custodial interrogation. Perhaps the most well-known Supreme Court decision in criminal law, fundamentally reshaping police procedure nationwide. The warnings became a cultural touchstone, familiar to virtually all Americans through television and film. Miranda was retried without the confession, convicted again, and paroled in 1972. He was stabbed to death in a bar fight in 1976; the suspect in his killing was read his Miranda rights and chose to remain silent.",
+      dissent: "Justice Harlan, joined by Justices Stewart and White, dissented sharply, calling the decision 'a hazardous experimentation' with the criminal justice system. Harlan argued the voluntariness standard under the Due Process Clause was sufficient and warned the decision would 'return a killer, a rapist or other criminal to the streets.' Justice White also dissented separately, predicting the decision would lead to fewer confessions and more unsolved crimes. Justice Clark dissented in part.",
+      relatedCases: ["Escobedo v. Illinois (1964)", "Dickerson v. United States (2000)", "Berghuis v. Thompkins (2010)", "Missouri v. Seibert (2004)"]
+    },
+    {
+      name: "Gideon v. Wainwright",
+      cite: "372 U.S. 335 (1963)",
+      year: 1963,
+      topic: "Sixth Amendment — Right to Counsel",
+      subtopic: "Right to Appointed Counsel",
+      tags: ["6th Amend", "Landmark"],
+      vote: "9-0",
+      author: "Justice Black",
+      facts: "On June 3, 1961, someone broke into the Bay Harbor Pool Room in Panama City, Florida, smashing a door, breaking into a cigarette machine and jukebox, and stealing beer, wine, Coca-Cola, and coins from the machines. A witness reported seeing Clarence Earl Gideon in the pool room around 5:30 a.m. with a wine bottle and money in his pockets. Gideon, a 51-year-old white man with a prior criminal record who had been in and out of prisons for much of his life, was arrested and charged with felony breaking and entering with intent to commit petty larceny. At trial, Gideon appeared without a lawyer and asked the court to appoint one for him. The judge denied the request, explaining that under Florida law, appointed counsel was provided only in capital cases. Gideon responded: 'The United States Supreme Court says I am entitled to be represented by counsel.' He was forced to conduct his own defense — making an opening statement, cross-examining witnesses, calling witnesses, and making closing arguments. The jury found him guilty, and he was sentenced to five years in prison.",
+      proceduralHistory: "Gideon was convicted in the Circuit Court of Bay County, Florida. He filed a habeas corpus petition with the Florida Supreme Court, which denied relief without opinion. Gideon then filed a handwritten, in forma pauperis petition for certiorari with the U.S. Supreme Court, written in pencil from prison. The Court granted certiorari and appointed Abe Fortas (later a Supreme Court Justice) to argue Gideon's case.",
+      holding: "The Sixth Amendment's guarantee of the right to counsel is a fundamental right, essential to a fair trial, and is obligatory upon the states through the Fourteenth Amendment. States must provide appointed counsel to indigent defendants charged with serious criminal offenses.",
+      reasoning: [
+        "Overruled Betts v. Brady (1942), which held that appointed counsel was only required in 'special circumstances' (complexity of charges, illiteracy of defendant, etc.)",
+        "The right to counsel is 'fundamental and essential to fair trials in this country' — not just a procedural nicety",
+        "'Lawyers in criminal courts are necessities, not luxuries' — the government hires attorneys to prosecute, and defendants who can afford it never fail to hire them",
+        "Without counsel, even an intelligent, educated layperson 'lacks both the skill and knowledge adequately to prepare his defense'",
+        "The original intent of the Framers supports the right, as the Sixth Amendment was adopted precisely because the Founders knew fair trials required the assistance of counsel",
+        "In practice, Betts had already been eroded: since 1950, no case had actually applied the 'special circumstances' rule to deny counsel"
+      ],
+      keyQuotes: [
+        { text: "Reason and reflection require us to recognize that in our adversary system of criminal justice, any person haled into court, who is too poor to hire a lawyer, cannot be assured a fair trial unless counsel is provided for him.", attribution: "Justice Black, majority opinion" },
+        { text: "Lawyers to prosecute are everywhere deemed essential to protect the public's interest in an orderly society. That government hires lawyers to prosecute and defendants who have the money hire lawyers to defend are the strongest indications that lawyers in criminal courts are necessities, not luxuries.", attribution: "Justice Black, majority opinion" }
+      ],
+      significance: "Guaranteed the right to a court-appointed lawyer for all felony defendants who cannot afford one. Led directly to the creation of public defender offices across the country. Gideon was retried with appointed counsel (local attorney W. Fred Turner), and the jury acquitted him in just over an hour. The case became the subject of Anthony Lewis's celebrated book 'Gideon's Trumpet' (1964). Later extended to misdemeanors carrying jail time in Argersinger v. Hamlin (1972).",
+      dissent: "The decision was unanimous (9-0). Justice Harlan wrote a notable concurrence, agreeing with the result but disagreeing with the majority's reasoning. He argued that Betts v. Brady was an 'anachronism' that had already been substantially eroded, and that the Court should simply acknowledge this rather than applying the incorporation doctrine broadly.",
+      relatedCases: ["Powell v. Alabama (1932)", "Betts v. Brady (1942)", "Argersinger v. Hamlin (1972)", "Scott v. Illinois (1979)", "Strickland v. Washington (1984)"]
+    },
+    {
+      name: "Strickland v. Washington",
+      cite: "466 U.S. 668 (1984)",
+      year: 1984,
+      topic: "Sixth Amendment — Right to Counsel",
+      subtopic: "Effective Assistance of Counsel",
+      tags: ["6th Amend"],
+      vote: "8-1",
+      author: "Justice O'Connor",
+      facts: "In 1976, David Washington went on a 10-day crime spree in the Miami, Florida area. He committed three groups of crimes: a kidnapping, stabbing, and attempted murder; a robbery, kidnapping, and attempted murder; and a burglary, robbery, and murder. After his accomplices were arrested, Washington surrendered, gave a lengthy statement confessing to the three capital murders, and against his attorney's advice, pled guilty to all charges including three capital murder counts. His court-appointed lawyer, William Tunkey, actively prepared for the sentencing hearing. However, when Washington told Tunkey about his dire financial straits and emotional state, the attorney made several strategic decisions: he chose not to seek out character witnesses (believing Washington's criminal history would undermine their testimony), did not request a psychiatric examination (fearing it would be counterproductive), and did not investigate Washington's background for mitigating factors. At sentencing, the judge found 'numerous aggravating circumstances and no (or insufficient) mitigating circumstances' and sentenced Washington to death on each murder count.",
+      proceduralHistory: "Washington was sentenced to death in the Dade County Circuit Court. The Florida Supreme Court affirmed. Washington then filed a habeas corpus petition in U.S. District Court, which denied relief. The Fifth Circuit Court of Appeals (en banc) reversed, articulating a multi-factor standard for ineffective assistance. The U.S. Supreme Court granted certiorari to establish a uniform standard.",
+      holding: "To establish ineffective assistance of counsel in violation of the Sixth Amendment, a defendant must show: (1) Deficient Performance — counsel's representation fell below an objective standard of reasonableness as measured by prevailing professional norms; AND (2) Prejudice — there is a reasonable probability that, but for counsel's unprofessional errors, the result of the proceeding would have been different. A 'reasonable probability' is one sufficient to undermine confidence in the outcome.",
+      reasoning: [
+        "The purpose of the Sixth Amendment guarantee is to ensure the defendant receives a fair trial — 'a trial whose result is reliable'",
+        "Courts must judge counsel's conduct by the 'prevailing professional norms' at the time of representation, not in hindsight",
+        "There is a 'strong presumption that counsel's conduct falls within the wide range of reasonable professional assistance' — courts must be 'highly deferential' to counsel's decisions",
+        "Strategic decisions made after thorough investigation are 'virtually unchallengeable'; strategic decisions after limited investigation are reasonable only to the extent the limitations were reasonable",
+        "The prejudice prong requires more than showing the errors had 'some conceivable effect' — the defendant must show a reasonable probability of a different outcome",
+        "The two prongs may be addressed in either order; if one is not met, the court need not consider the other"
+      ],
+      keyQuotes: [
+        { text: "The benchmark for judging any claim of ineffectiveness must be whether counsel's conduct so undermined the proper functioning of the adversarial process that the trial cannot be relied on as having produced a just result.", attribution: "Justice O'Connor, majority opinion" },
+        { text: "Judicial scrutiny of counsel's performance must be highly deferential... Because of the difficulties inherent in making the evaluation, a court must indulge a strong presumption that counsel's conduct falls within the wide range of reasonable professional assistance.", attribution: "Justice O'Connor, majority opinion" }
+      ],
+      significance: "Established the two-prong test that remains the governing standard for all ineffective assistance of counsel claims. The high bar — especially the prejudice requirement — has been widely criticized as nearly impossible to meet, effectively insulating all but the most egregious attorney errors from reversal. Despite criticism, the standard has been consistently reaffirmed and applied to plea bargaining (Lafler v. Cooper, 2012), capital cases (Wiggins v. Smith, 2003), and immigration consequences (Padilla v. Kentucky, 2010).",
+      dissent: "Justice Marshall was the sole dissenter. He argued the standard was fatally flawed: the performance prong's 'wide range of reasonable professional assistance' was too deferential, and the prejudice prong improperly shifted the focus from attorney competence to outcome. Marshall predicted the test would fail to protect defendants from genuinely incompetent lawyering in all but the most extreme cases.",
+      relatedCases: ["McMann v. Richardson (1970)", "Wiggins v. Smith (2003)", "Padilla v. Kentucky (2010)", "Lafler v. Cooper (2012)"]
+    },
+    {
+      name: "Carpenter v. United States",
+      cite: "585 U.S. 296 (2018)",
+      year: 2018,
+      topic: "Fourth Amendment — Search & Seizure",
+      subtopic: "Reasonable Expectation of Privacy",
+      tags: ["4th Amend"],
+      vote: "5-4",
+      author: "Chief Justice Roberts",
+      facts: "In April 2011, police arrested four men suspected of committing a series of armed robberies of Radio Shack and T-Mobile stores in the Detroit area. One suspect confessed and gave the FBI his own cell phone number and the numbers of other participants, including Timothy Carpenter. The FBI then applied for and received court orders under the Stored Communications Act (SCA) — which requires only 'reasonable grounds' (less than probable cause) — to obtain cell-site location information (CSLI) from Carpenter's wireless carriers, MetroPCS and Sprint. The carriers produced 127 days of historical CSLI for Carpenter, comprising 12,898 location data points — an average of 101 data points per day. This data placed Carpenter's phone near four of the robbery locations at the time they occurred. At trial, the government's expert produced maps showing that Carpenter's phone was within a half-mile to two miles of the robbery locations during the relevant times. Carpenter was convicted of six counts of robbery and sentenced to more than 100 years in prison.",
+      proceduralHistory: "Carpenter was convicted in the U.S. District Court for the Eastern District of Michigan. The Sixth Circuit Court of Appeals affirmed, holding that Carpenter had no reasonable expectation of privacy in CSLI because he had voluntarily shared it with his carriers (applying the third-party doctrine from Smith v. Maryland). The U.S. Supreme Court granted certiorari.",
+      holding: "The government's acquisition of historical cell-site location information (CSLI) revealing the location and movements of a cell phone user over the course of 127 days constitutes a Fourth Amendment search. The government must generally obtain a warrant supported by probable cause before acquiring such records.",
+      reasoning: [
+        "CSLI provides an 'intimate window into a person's life, revealing not only his particular movements, but through them his familial, political, professional, religious, and sexual associations'",
+        "Cell phone location data is 'detailed, encyclopedic, and effortlessly compiled' — the digital equivalent of attaching an ankle monitor",
+        "The third-party doctrine (Smith v. Maryland, United States v. Miller) does not apply because cell phone location data is not truly 'voluntarily' shared — phones log location data automatically, without any affirmative act by the user",
+        "The 'seismic shifts in digital technology' require the Court to adapt Fourth Amendment protections to preserve the 'degree of privacy against government that existed when the Fourth Amendment was adopted'",
+        "The ruling is deliberately narrow: the Court declined to address real-time CSLI, 'tower dumps,' or conventional surveillance techniques"
+      ],
+      keyQuotes: [
+        { text: "A cell phone faithfully follows its owner beyond public thoroughfares and into private residences, doctor's offices, political headquarters, and other potentially revealing locales... Accordingly, when the Government tracks the location of a cell phone it achieves near perfect surveillance, as if it had attached an ankle monitor to the phone's user.", attribution: "Chief Justice Roberts, majority opinion" },
+        { text: "We decline to grant the state unrestricted access to a wireless carrier's database of physical location information.", attribution: "Chief Justice Roberts, majority opinion" }
+      ],
+      significance: "Extended Fourth Amendment protections to digital-age surveillance, signaling that the third-party doctrine has limits when applied to pervasive digital records. The decision is a landmark in digital privacy law, though its deliberately narrow scope leaves many questions open for future cases (real-time tracking, smart home data, wearable devices, etc.).",
+      dissent: "Four justices dissented in separate opinions. Justice Kennedy argued the third-party doctrine should apply straightforwardly. Justice Thomas argued the Fourth Amendment's original meaning does not support the Katz 'reasonable expectation of privacy' test at all. Justice Alito warned the majority's approach would 'guarantee a blizzard of litigation' over what digital records require warrants. Justice Gorsuch, while dissenting, suggested a property-rights based approach might better protect digital privacy than Katz.",
+      relatedCases: ["Smith v. Maryland (1979)", "United States v. Miller (1976)", "United States v. Jones (2012)", "Riley v. California (2014)"]
+    },
+    {
+      name: "Brady v. Maryland",
+      cite: "373 U.S. 83 (1963)",
+      year: 1963,
+      topic: "Fourteenth Amendment — Due Process",
+      subtopic: "Prosecutorial Misconduct",
+      tags: ["14th Amend", "Landmark"],
+      vote: "7-2",
+      author: "Justice Douglas",
+      facts: "John Leo Brady and his companion Charles Boblit were both charged with first-degree murder in the killing of William Brooks during a robbery in Maryland on June 27, 1958. Brady admitted participating in the robbery but claimed Boblit did the actual killing. Prior to trial, Brady's counsel requested to examine all of Boblit's extrajudicial statements. The prosecution turned over several of Boblit's statements but withheld one — a written statement in which Boblit admitted that he personally strangled Brooks. This critical confession was not disclosed to Brady's defense team until after Brady had been tried, convicted, and sentenced to death. Had the defense known about Boblit's confession, it would have been powerful evidence supporting Brady's claim that he did not actually commit the murder.",
+      proceduralHistory: "Brady was convicted of first-degree murder and sentenced to death in the Circuit Court for Anne Arundel County, Maryland. The Maryland Court of Appeals affirmed the conviction but remanded for retrial on the question of punishment only, holding that suppression of the Boblit confession denied Brady due process as to sentencing (but not guilt). The U.S. Supreme Court granted certiorari.",
+      holding: "The suppression by the prosecution of evidence favorable to an accused upon request violates due process where the evidence is material either to guilt or to punishment, irrespective of the good faith or bad faith of the prosecution.",
+      reasoning: [
+        "The Fourteenth Amendment's Due Process Clause is violated whenever the prosecution suppresses evidence favorable to the accused that is material to the outcome",
+        "The focus is on 'the character of the evidence, not the character of the prosecutor' — even inadvertent suppression violates due process",
+        "'Society wins not only when the guilty are convicted, but when criminal trials are fair; our system of the administration of justice suffers when any accused is treated unfairly'",
+        "The rule applies to both exculpatory evidence (evidence of innocence) and impeachment evidence (evidence undermining a witness's credibility) — as later clarified in Giglio v. United States (1972)",
+        "A prosecutor's obligation is to seek justice, not merely to win convictions"
+      ],
+      keyQuotes: [
+        { text: "Society wins not only when the guilty are convicted, but when criminal trials are fair; our system of the administration of justice suffers when any accused is treated unfairly.", attribution: "Justice Douglas, majority opinion" },
+        { text: "The suppression by the prosecution of evidence favorable to an accused upon request violates due process where the evidence is material either to guilt or to punishment, irrespective of the good faith or bad faith of the prosecution.", attribution: "Justice Douglas, majority opinion" }
+      ],
+      significance: "Created the Brady disclosure obligation — one of the cornerstones of American criminal procedure. Prosecutors are constitutionally required to disclose all material exculpatory and impeachment evidence to the defense. The Brady rule has generated a vast body of case law on what constitutes 'materiality.' Brady violations remain one of the most common grounds for post-conviction relief. Despite the rule, studies suggest prosecutors still frequently fail to disclose favorable evidence.",
+      dissent: "The ruling on the core principle was effectively unanimous. The disagreement was limited to the remedy: the majority held the suppression required a new trial on punishment only, not on guilt.",
+      relatedCases: ["Giglio v. United States (1972)", "United States v. Bagley (1985)", "Kyles v. Whitley (1995)", "Strickler v. Greene (1999)"]
+    },
+    {
+      name: "In re Winship",
+      cite: "397 U.S. 358 (1970)",
+      year: 1970,
+      topic: "Fourteenth Amendment — Due Process",
+      subtopic: "Burden of Proof",
+      tags: ["14th Amend"],
+      vote: "6-3",
+      author: "Justice Brennan",
+      facts: "A 12-year-old boy, Samuel Winship, was charged as a juvenile delinquent in New York Family Court for an act that, if committed by an adult, would constitute larceny — specifically, stealing $112 from a woman's pocketbook in a locker. Under New York law at the time, juvenile delinquency proceedings used the civil standard of 'preponderance of the evidence' rather than the criminal standard of 'beyond a reasonable doubt.' The Family Court judge acknowledged that the evidence might not establish guilt beyond a reasonable doubt, but expressly found that the preponderance standard was satisfied and adjudicated Winship a juvenile delinquent. He was placed in a training school for an initial period of 18 months, subject to annual extensions until his 18th birthday — potentially six years of confinement for the 12-year-old.",
+      proceduralHistory: "Winship was adjudicated delinquent in New York Family Court. The Appellate Division of the New York Supreme Court affirmed. The New York Court of Appeals affirmed (4-3), with the dissenters arguing the reasonable doubt standard should apply. The U.S. Supreme Court granted certiorari.",
+      holding: "The Due Process Clause of the Fourteenth Amendment requires proof beyond a reasonable doubt of every fact necessary to constitute the crime charged, in both adult criminal cases and juvenile delinquency proceedings where the juvenile faces potential confinement.",
+      reasoning: [
+        "The reasonable doubt standard is 'indispensable' to 'command the respect and confidence of the community in applications of the criminal law'",
+        "The standard is bottomed on 'a fundamental value determination of our society that it is far worse to convict an innocent man than to let a guilty man go free'",
+        "It reduces the risk of factual error in criminal proceedings — protecting against convictions based on uncertain evidence",
+        "The standard provides 'concrete substance for the presumption of innocence,' which is the bedrock of criminal justice",
+        "Juvenile proceedings that may result in institutional confinement and stigmatization require the same protections — the label 'civil' or 'delinquency' does not diminish the reality of lost liberty",
+        "The use of a lesser standard would risk 'convicting' juveniles for acts they did not commit"
+      ],
+      keyQuotes: [
+        { text: "It is critical that the moral force of the criminal law not be diluted by a standard of proof that leaves people in doubt whether innocent men are being condemned.", attribution: "Justice Brennan, majority opinion" },
+        { text: "The reasonable-doubt standard plays a vital role in the American scheme of criminal procedure. It is a prime instrument for reducing the risk of convictions resting on factual error.", attribution: "Justice Brennan, majority opinion" }
+      ],
+      significance: "Constitutionalized the beyond-a-reasonable-doubt standard for all criminal cases at both state and federal levels — a standard previously rooted only in common law tradition. Extended this protection to juvenile delinquency proceedings, continuing the due process revolution in juvenile justice begun by In re Gault (1967). The case is foundational to understanding the allocation of risk in criminal justice: it embodies the preference for letting the guilty go free over convicting the innocent.",
+      dissent: "Justice Black dissented, arguing the Constitution does not specify a standard of proof and this matter should be left to the states. Chief Justice Burger also dissented, expressing concern that imposing criminal procedural standards on juvenile proceedings would undermine the rehabilitative purpose of the juvenile justice system. Justice Stewart dissented on similar grounds.",
+      relatedCases: ["In re Gault (1967)", "Jackson v. Virginia (1979)", "Apprendi v. New Jersey (2000)", "Sullivan v. Louisiana (1993)"]
+    },
+    {
+      name: "Illinois v. Gates",
+      cite: "462 U.S. 213 (1983)",
+      year: 1983,
+      topic: "Fourth Amendment — Search & Seizure",
+      subtopic: "Warrant Requirement",
+      tags: ["4th Amend"],
+      vote: "6-3",
+      author: "Justice Rehnquist",
+      facts: "On May 3, 1978, the Bloomingdale, Illinois Police Department received an anonymous letter alleging that married couple Lance and Susan Gates were engaged in drug trafficking. The letter described their method in detail: Lance would drive to Florida, where Susan would fly ahead; Lance would load the car with drugs while Susan drove it back to Illinois; and they had over $100,000 worth of drugs in their basement. A detective corroborated key details of the tip: Lance Gates had a May 5 reservation on a flight to West Palm Beach; surveillance confirmed he flew to Florida; he was observed taking a taxi to a motel where a car registered to Susan Gates was parked; early the next morning, he and a woman left in the car heading north toward Bloomingdale. Based on the anonymous letter and the detective's corroboration, a judge issued a search warrant for the Gates' home and car. The search uncovered approximately 350 pounds of marijuana in the car's trunk, marijuana and weapons in the home, and other contraband.",
+      proceduralHistory: "The trial court ordered suppression of the evidence. The Illinois Appellate Court affirmed. The Illinois Supreme Court also affirmed, applying the Aguilar-Spinelli two-pronged test and finding the anonymous tip deficient because it did not reveal the informant's 'basis of knowledge' or establish 'veracity.' The U.S. Supreme Court granted certiorari.",
+      holding: "The rigid Aguilar-Spinelli two-pronged test for evaluating whether an informant's tip establishes probable cause for a search warrant is replaced by a 'totality of the circumstances' analysis. Under this approach, the task of an issuing magistrate is to make a practical, common-sense decision whether, given all the circumstances, there is a fair probability that contraband or evidence of a crime will be found in a particular place.",
+      reasoning: [
+        "Probable cause is a 'fluid concept — turning on the assessment of probabilities in particular factual contexts — not readily, or even usefully, reduced to a neat set of legal rules'",
+        "The Aguilar-Spinelli test's rigid independent requirements of 'veracity/reliability' and 'basis of knowledge' are abandoned as independent prongs",
+        "Instead, an informant's veracity, reliability, and basis of knowledge are 'closely intertwined issues' that should be evaluated as part of the totality of circumstances",
+        "A deficiency in one factor may be compensated by a strong showing of another, or by independent police corroboration",
+        "The corroborated prediction of future behavior (Gates' travel pattern) supports the tip's reliability even when the informant is anonymous",
+        "The standard gives 'great deference' to a magistrate's probable cause determination — it should be upheld so long as the magistrate had a 'substantial basis' for concluding probable cause existed"
+      ],
+      keyQuotes: [
+        { text: "The task of the issuing magistrate is simply to make a practical, common-sense decision whether, given all the circumstances set forth in the affidavit before him, there is a fair probability that contraband or evidence of a crime will be found in a particular place.", attribution: "Justice Rehnquist, majority opinion" },
+        { text: "Probable cause is a fluid concept — turning on the assessment of probabilities in particular factual contexts — not readily, or even usefully, reduced to a neat set of legal rules.", attribution: "Justice Rehnquist, majority opinion" }
+      ],
+      significance: "Made it significantly easier for police to obtain search warrants based on tips from informants, including anonymous informants. By replacing the rigid two-pronged test with a flexible totality-of-circumstances approach, the decision gave magistrates more discretion and made probable cause determinations harder to overturn on appeal. The Gates standard remains the governing framework for evaluating informant tips.",
+      dissent: "Justices Brennan and Marshall dissented, arguing the Aguilar-Spinelli framework provided essential structure and predictability. They warned the 'totality' test was too amorphous and would effectively 'gut' Fourth Amendment protections by allowing warrants based on unverified anonymous tips. Justice Stevens dissented on different grounds.",
+      relatedCases: ["Aguilar v. Texas (1964)", "Spinelli v. United States (1969)", "Draper v. United States (1959)", "Alabama v. White (1990)"]
+    },
+    {
+      name: "Arizona v. Gant",
+      cite: "556 U.S. 332 (2009)",
+      year: 2009,
+      topic: "Fourth Amendment — Search & Seizure",
+      subtopic: "Exceptions to Warrant Requirement",
+      tags: ["4th Amend"],
+      vote: "5-4",
+      author: "Justice Stevens",
+      facts: "On August 25, 1999, acting on an anonymous tip, Tucson police officers went to a residence to investigate suspected narcotics activity. They knocked on the front door, and Rodney Gant answered. He identified himself and stated there was an outstanding warrant for his arrest for driving with a suspended license. The officers left but returned later that evening. When they returned, Gant was not present, but they encountered two other individuals — one was arrested for providing a false name and the other on an outstanding warrant. Both were handcuffed and placed in separate patrol cars. When Gant drove up, he parked at the far end of the driveway and was immediately arrested for the outstanding warrant (driving with suspended license). He too was handcuffed and placed in the back of a patrol car. With all three suspects secured in patrol cars, officers then searched Gant's car and found a gun and a bag of cocaine in a jacket pocket on the back seat.",
+      proceduralHistory: "Gant was convicted of drug possession in the Pima County Superior Court after his suppression motion was denied. The Arizona Court of Appeals reversed, holding the search unreasonable because Gant could not have accessed the car at the time of the search. The Arizona Supreme Court affirmed the reversal. The U.S. Supreme Court granted certiorari, noting that lower courts had been divided on how broadly to read New York v. Belton.",
+      holding: "Police may search a vehicle incident to the arrest of a recent occupant only when: (1) the arrestee is unsecured and within reaching distance of the passenger compartment at the time of the search (officer safety / evidence preservation rationale), OR (2) it is reasonable to believe that evidence relevant to the crime of arrest might be found in the vehicle (evidence-gathering rationale).",
+      reasoning: [
+        "Clarified and significantly narrowed New York v. Belton (1981), which had been widely (mis)read by lower courts to authorize a vehicle search after every arrest of a vehicle occupant",
+        "The Chimel v. California (1969) rationales — protecting officer safety and preserving evidence — simply do not apply when the arrestee is already handcuffed and secured in a patrol car",
+        "An 'untethered' reading of Belton gave 'police officers carte blanche' for warrantless searches, contrary to the Fourth Amendment's purpose",
+        "The second prong (evidence related to the crime of arrest) provides a more limited authorization: arresting someone for a traffic violation does not justify searching for drugs, but arresting someone for drug possession may justify a vehicle search",
+        "In this case, Gant was arrested for driving with a suspended license, was handcuffed and locked in a patrol car, and there was no reason to believe evidence of the offense would be found in the vehicle"
+      ],
+      keyQuotes: [
+        { text: "Construing Belton broadly to allow vehicle searches incident to every arrest would untether the rule from the justifications underlying the Chimel exception — a result clearly incompatible with our Fourth Amendment jurisprudence.", attribution: "Justice Stevens, majority opinion" },
+        { text: "A rule that gives police the power to conduct such a search whenever an individual is caught committing a traffic offense, when there is no basis for believing evidence of the offense might be found in the vehicle, creates a serious and recurring threat to the privacy of countless individuals.", attribution: "Justice Stevens, majority opinion" }
+      ],
+      significance: "Significantly restricted when police can search vehicles incident to arrest — a major practical change that eliminated what had become near-automatic vehicle searches after traffic arrests. The decision forced police to articulate a specific justification for vehicle searches, either demonstrating the arrestee could access the car or connecting the search to the crime of arrest.",
+      dissent: "Justice Alito, joined by Chief Justice Roberts, Justice Kennedy, and Justice Breyer, dissented. Alito argued the decision was unworkable because it required officers to make split-second judgments about whether an arrestee might 'break free' and reach the car. He defended Belton's bright-line rule as essential for practical law enforcement and warned the new standard would generate confusion and litigation.",
+      relatedCases: ["Chimel v. California (1969)", "New York v. Belton (1981)", "Thornton v. United States (2004)", "Davis v. United States (2011)"]
+    },
+    {
+      name: "Berghuis v. Thompkins",
+      cite: "560 U.S. 370 (2010)",
+      year: 2010,
+      topic: "Fifth Amendment — Self-Incrimination",
+      subtopic: "Right to Silence",
+      tags: ["5th Amend"],
+      vote: "5-4",
+      author: "Justice Kennedy",
+      facts: "On January 10, 2000, a shooting occurred outside a mall in Southfield, Michigan, killing one victim and injuring another. Van Chester Thompkins fled and was arrested about one year later in Ohio. Two Southfield detectives traveled to Ohio and interrogated Thompkins at an Ohio police station. At the beginning, Detective Helgert presented Thompkins with a form listing his Miranda rights. Helgert asked Thompkins to read the fifth warning aloud (to verify he could read English): 'You have the right to decide at any time before or during questioning to use your right to remain silent and your right to talk with a lawyer while you are being questioned.' Thompkins read this aloud but refused to sign the acknowledgment form. The interrogation then proceeded for approximately two hours and 45 minutes. During this time, Thompkins was largely silent — he gave a few limited, monosyllabic responses, but mostly said nothing. He did not say he wanted to remain silent, did not ask for a lawyer, and did not say he did not want to talk. Near the end, Detective Helgert changed tactic and asked: 'Do you believe in God?' Thompkins said 'Yes.' Helgert asked: 'Do you pray to God?' Thompkins said 'Yes.' Helgert then asked: 'Do you pray to God to forgive you for shooting that boy down?' Thompkins answered 'Yes' and looked away. He refused to make a written statement.",
+      proceduralHistory: "Thompkins was convicted of first-degree murder in the Wayne County Circuit Court, Michigan. The Michigan Court of Appeals affirmed. The Michigan Supreme Court denied review. Thompkins filed a habeas corpus petition in the U.S. District Court for the Eastern District of Michigan, which denied relief. The Sixth Circuit Court of Appeals reversed, finding Miranda had been violated. The U.S. Supreme Court granted certiorari.",
+      holding: "A suspect who has received and understood Miranda warnings and has not invoked his rights waives the right to remain silent by making an uncoerced statement to police. To invoke the right to remain silent, a suspect must do so unambiguously. Merely remaining silent for a prolonged period during interrogation is not an invocation of the right to silence.",
+      reasoning: [
+        "The unambiguous invocation requirement from Davis v. United States (1994) — which applied to the right to counsel — is extended to the right to silence",
+        "Requiring an unambiguous invocation 'results in an objective inquiry' that avoids the difficulties of having officers parse ambiguous statements or behaviors",
+        "An implied waiver of the right to silence can be established by showing (1) the suspect received and understood Miranda warnings, and (2) the suspect's subsequent statement was voluntary (not coerced)",
+        "Thompkins' silence for nearly three hours, while unusual, did not constitute an invocation — he understood his rights and chose to make a statement",
+        "The burden of showing waiver remains on the prosecution, but waiver need not be express"
+      ],
+      keyQuotes: [
+        { text: "A suspect who has received and understood the Miranda warnings, and has not invoked his Miranda rights, waives the right to remain silent by making an uncoerced statement to the police.", attribution: "Justice Kennedy, majority opinion" },
+        { text: "If the right to remain silent could be invoked by silence, it would be difficult for police to know when to stop questioning — or even when they might properly begin.", attribution: "Justice Kennedy, majority opinion" }
+      ],
+      significance: "Effectively shifted the practical burden from the police (to obtain a waiver before questioning) to the suspect (to clearly invoke rights to stop questioning). Critics argue this undermines Miranda's protective framework by requiring suspects to speak in order to invoke their right not to speak. Supporters argue it provides clear guidance to officers and recognizes the reality that many suspects choose to engage with investigators.",
+      dissent: "Justice Sotomayor, joined by Justices Stevens, Ginsburg, and Breyer, wrote a forceful dissent arguing the decision 'turns Miranda upside down.' She argued that the majority converted Miranda's requirement of an affirmative waiver into a presumption of waiver from silence, noting the 'counterintuitive' result that 'a suspect must speak in order to invoke his right to remain silent.' She warned the decision would encourage police to engage in prolonged interrogations hoping for eventual statements.",
+      relatedCases: ["Miranda v. Arizona (1966)", "Davis v. United States (1994)", "North Carolina v. Butler (1979)", "Missouri v. Seibert (2004)"]
+    },
+    {
+      name: "Batson v. Kentucky",
+      cite: "476 U.S. 79 (1986)",
+      year: 1986,
+      topic: "Fourteenth Amendment — Due Process",
+      subtopic: "Identification Procedures",
+      tags: ["14th Amend", "Landmark"],
+      vote: "7-2",
+      author: "Justice Powell",
+      facts: "James Kirkland Batson, a Black man, was indicted on charges of second-degree burglary and receipt of stolen goods in Louisville, Kentucky in 1981. During jury selection (voir dire), the prosecutor used his peremptory challenges to strike all four Black persons on the venire (jury pool), resulting in a jury composed entirely of white persons. Batson's attorney moved to discharge the jury before it was sworn, arguing that the prosecutor's removal of all Black venire members violated Batson's Sixth Amendment right to a jury drawn from a cross-section of the community and his Fourteenth Amendment right to equal protection. The trial judge denied the motion, observing that the parties could use peremptory challenges to 'strike anybody they want to.' The all-white jury convicted Batson on both counts.",
+      proceduralHistory: "Batson was convicted in the Jefferson Circuit Court, Kentucky. The Kentucky Supreme Court affirmed, relying on Swain v. Alabama (1965), which required a defendant to show a pattern of discrimination across multiple cases — not just in the defendant's own trial — to establish an equal protection violation. The U.S. Supreme Court granted certiorari to reconsider Swain.",
+      holding: "The Equal Protection Clause of the Fourteenth Amendment prohibits prosecutors from exercising peremptory challenges to exclude potential jurors solely on the basis of race. A defendant may establish a prima facie case of purposeful discrimination based solely on the prosecutor's conduct at the defendant's own trial. If a prima facie case is made, the burden shifts to the prosecution to provide a race-neutral explanation for each challenged strike.",
+      reasoning: [
+        "Racial discrimination in jury selection 'violates a defendant's right to equal protection because it denies him the protection that a trial by jury is intended to secure'",
+        "It also 'undermines public confidence in the fairness of our system of justice' and harms the excluded jurors by denying them participation in civic life",
+        "Swain's requirement that a defendant prove discrimination across multiple cases placed a 'crippling burden' on defendants — the Court overruled it on this point",
+        "The three-step framework: (1) defendant must show facts raising an inference that the prosecutor used peremptory challenges on the basis of race; (2) the burden shifts to the prosecutor to offer a race-neutral explanation (not just saying 'I didn't discriminate'); (3) the trial court determines whether the defendant has established purposeful discrimination",
+        "A race-neutral explanation 'need not rise to the level justifying exercise of a challenge for cause' — it just cannot be pretextual"
+      ],
+      keyQuotes: [
+        { text: "The harm from discriminatory jury selection extends beyond that inflicted on the defendant and the excluded juror to touch the entire community. Selection procedures that purposefully exclude black persons from juries undermine public confidence in the fairness of our system of justice.", attribution: "Justice Powell, majority opinion" },
+        { text: "The Equal Protection Clause forbids the prosecutor to challenge potential jurors solely on account of their race or on the assumption that black jurors as a group will be unable impartially to consider the State's case against a black defendant.", attribution: "Justice Powell, majority opinion" }
+      ],
+      significance: "Created the Batson challenge framework, which has become a cornerstone of jury selection procedure. Later extended to gender-based discrimination (J.E.B. v. Alabama, 1994), to challenges by defense attorneys (Georgia v. McCollum, 1992), and to civil cases (Edmonson v. Leesville Concrete, 1991). Despite the framework, racial discrimination in jury selection remains a persistent problem. Studies consistently show that prosecutors continue to disproportionately strike Black jurors, and courts frequently accept facially race-neutral explanations. In Flowers v. Mississippi (2019), the Court reversed a conviction where the same prosecutor had struck 41 of 42 Black prospective jurors across six trials.",
+      dissent: "Chief Justice Burger dissented, arguing the decision 'will likely impair the peremptory challenge' and that peremptory challenges are by definition exercised without explanation. Justice Rehnquist also dissented, arguing there is no constitutional basis for requiring an explanation of peremptory challenges and predicting the decision would generate endless litigation.",
+      relatedCases: ["Swain v. Alabama (1965)", "J.E.B. v. Alabama (1994)", "Georgia v. McCollum (1992)", "Flowers v. Mississippi (2019)"]
+    },
+    {
+      name: "Riley v. California",
+      cite: "573 U.S. 373 (2014)",
+      year: 2014,
+      topic: "Fourth Amendment — Search & Seizure",
+      subtopic: "Exceptions to Warrant Requirement",
+      tags: ["4th Amend"],
+      vote: "9-0",
+      author: "Chief Justice Roberts",
+      facts: "On August 22, 2009, David Riley was stopped by a San Diego police officer for driving with expired registration tags. The stop revealed that Riley's license had been suspended, and the car was impounded. During an inventory search, officers found two handguns under the car's hood. Riley was arrested for possession of concealed and loaded firearms. An officer then searched Riley incident to arrest and found items associated with the 'Bloods' street gang. A gang unit detective, about two hours after the arrest, searched through Riley's smartphone — a Samsung Instinct M800 — and found photos of Riley standing in front of a car that police suspected had been involved in a recent gang shooting. Based in part on the phone evidence, Riley was charged in connection with the shooting, and at trial, the prosecution introduced photos and videos from the phone showing Riley making gang signs and a video of Riley's car. The case was consolidated with United States v. Wurie, in which a flip phone was searched incident to arrest, and call logs led officers to a stash house containing drugs, a firearm, and cash.",
+      proceduralHistory: "Riley was convicted of shooting at an occupied vehicle, assault with a semiautomatic firearm, and attempted murder in the California Superior Court. The California Court of Appeal affirmed, holding the search was valid under the search-incident-to-arrest exception. The California Supreme Court denied review. The U.S. Supreme Court granted certiorari, consolidating Riley with Wurie.",
+      holding: "Police officers must generally obtain a warrant before searching the digital contents of a cell phone seized from an individual who has been arrested. The search-incident-to-arrest exception to the warrant requirement does not extend to data stored on cell phones.",
+      reasoning: [
+        "The search-incident-to-arrest exception (from Chimel v. California) is justified by two concerns: (1) officer safety and (2) preventing destruction of evidence. Neither applies with sufficient force to cell phone data",
+        "Officer safety: 'Digital data stored on a cell phone cannot itself be used as a weapon to harm an arresting officer or to effectuate the arrestee's escape'",
+        "Evidence destruction: while remote wiping and encryption are concerns, they can be addressed by less intrusive means (Faraday bags, turning off the phone, removing the battery)",
+        "Cell phones differ from physical items in both a quantitative and qualitative sense — they are 'minicomputers' with immense storage capacity containing 'the privacies of life'",
+        "A cell phone search gives police access to far more than the most exhaustive search of a home: 'a phone not only contains in digital form many sensitive records previously found in the home; it also contains a broad array of private information never found in a home in any form'",
+        "The Court emphasized the 'pervasiveness' of cell phones — an average American would feel naked without one — and their comprehensive digital footprint"
+      ],
+      keyQuotes: [
+        { text: "Our answer to the question of what police must do before searching a cell phone seized incident to an arrest is accordingly simple — get a warrant.", attribution: "Chief Justice Roberts, majority opinion" },
+        { text: "Modern cell phones are not just another technological convenience. With all they contain and all they may reveal, they hold for many Americans 'the privacies of life.' The fact that technology now allows an individual to carry such information in his hand does not make the information any less worthy of the protection for which the Founders fought.", attribution: "Chief Justice Roberts, majority opinion" },
+        { text: "A cell phone search would typically expose to the government far more than the most exhaustive search of a house: A phone not only contains in digital form many sensitive records previously found in the home; it also contains a broad array of private information never found in a home in any form.", attribution: "Chief Justice Roberts, majority opinion" }
+      ],
+      significance: "A landmark unanimously-decided digital privacy case establishing that cell phone data is categorically different from physical objects for Fourth Amendment purposes. Often paired with Carpenter v. United States (2018) as signaling the Court's recognition that digital-age realities require updating Fourth Amendment doctrine. The decision had immediate practical impact: police departments nationwide revised procedures to obtain warrants before searching phones.",
+      dissent: "The decision was unanimous (9-0). Justice Alito wrote a concurrence in part, agreeing with the judgment but suggesting that legislatures might be better positioned than courts to balance privacy and law enforcement interests regarding cell phone searches.",
+      relatedCases: ["Chimel v. California (1969)", "United States v. Robinson (1973)", "Arizona v. Gant (2009)", "Carpenter v. United States (2018)"]
+    },
+    {
+      name: "Massiah v. United States",
+      cite: "377 U.S. 201 (1964)",
+      year: 1964,
+      topic: "Sixth Amendment — Right to Counsel",
+      subtopic: "Right at Critical Stages",
+      tags: ["6th Amend"],
+      vote: "6-3",
+      author: "Justice Stewart",
+      facts: "In 1958, Winston Massiah, a merchant seaman, was indicted for violating federal narcotics laws after a large quantity of cocaine was found aboard the S.S. Santa Maria. Massiah retained a lawyer, pled not guilty, and was released on bail. His co-defendant, Jesse Colson, also indicted, decided to cooperate with the government. Without Massiah's knowledge, federal agents installed a radio transmitter under the front seat of Colson's car. On November 19, 1959, Colson engaged Massiah in a lengthy conversation in the car while Agent Murphy listened from a nearby vehicle. During this conversation, Massiah made several incriminating statements about the narcotics operation, including details about his role in importing cocaine. These statements, which were overheard by Agent Murphy and testified to at trial, were damaging to Massiah's defense. At no point did Massiah know he was speaking to a government informant or that the conversation was being monitored. His attorney was not present and had not been informed.",
+      proceduralHistory: "Massiah was convicted in the U.S. District Court for the Southern District of New York. The Second Circuit Court of Appeals affirmed the conviction. The U.S. Supreme Court granted certiorari.",
+      holding: "Once adversarial judicial proceedings have been initiated against an individual (by indictment, information, arraignment, or preliminary hearing), the Sixth Amendment prohibits the government from deliberately eliciting incriminating statements from the accused in the absence of counsel. Statements obtained in violation of this right are inadmissible at trial.",
+      reasoning: [
+        "The Sixth Amendment right to counsel attaches at the initiation of formal adversarial judicial proceedings — once a defendant is indicted, he has a right to rely on counsel as 'a medium between him and the government'",
+        "After indictment, the government deliberately and surreptitiously used Colson to elicit incriminating statements from Massiah in the absence of his retained attorney",
+        "The Sixth Amendment would be rendered meaningless if the government could circumvent the right to counsel through 'secret interrogation' after formal charges",
+        "The rule applies regardless of whether the defendant knows he is speaking with a government agent — the focus is on whether the government 'deliberately elicited' statements",
+        "This right is offense-specific: it applies only to the offenses for which formal proceedings have begun"
+      ],
+      keyQuotes: [
+        { text: "We hold that the petitioner was denied the basic protections of [the Sixth Amendment] guarantee when there was used against him at his trial evidence of his own incriminating words, which federal agents had deliberately elicited from him after he had been indicted and in the absence of his counsel.", attribution: "Justice Stewart, majority opinion" },
+        { text: "Any secret interrogation of the defendant, from and after the finding of the indictment, without the protection afforded by the presence of counsel, contravenes the basic dictates of fairness in the conduct of criminal causes and the fundamentals of due process of law.", attribution: "Justice Stewart, quoting People v. Waterman (NY 1935)" }
+      ],
+      significance: "Established the Massiah doctrine: once formal criminal proceedings begin, the government cannot deliberately elicit incriminating statements from the accused without counsel present. The rule applies even when the government uses undercover informants and the suspect is unaware of government involvement. Later refined in Brewer v. Williams (1977) (the 'Christian burial speech' case), United States v. Henry (1980) (jail cellmate planted by government), and Kuhlmann v. Wilson (1986) (passive vs. active informants).",
+      dissent: "Justice White, joined by Justices Clark and Harlan, dissented. White argued the rule was unjustified and would hamper legitimate law enforcement. He saw no reason why the government should be barred from using standard investigative techniques merely because an indictment had been returned. He warned the decision would effectively grant immunity from all forms of police investigation after indictment.",
+      relatedCases: ["Brewer v. Williams (1977)", "United States v. Henry (1980)", "Kuhlmann v. Wilson (1986)", "Kansas v. Ventris (2009)"]
+    },
+    {
+      name: "Chimel v. California",
+      cite: "395 U.S. 752 (1969)",
+      year: 1969,
+      topic: "Fourth Amendment — Search & Seizure",
+      subtopic: "Exceptions to Warrant Requirement",
+      tags: ["4th Amend"],
+      vote: "6-2",
+      author: "Justice Stewart",
+      facts: "On September 13, 1965, police officers arrived at Ted Chimel's home in Santa Ana, California with a warrant for his arrest on suspicion of burglary of a coin shop. Chimel's wife let the officers in, and when Chimel arrived home, they arrested him and asked to 'look around.' Chimel objected, but officers told him that based on the lawful arrest, they could conduct a search. Over the next 45 minutes to an hour, officers searched the entire three-bedroom house, including the attic, the garage, and a small workshop. They directed Chimel's wife to open drawers and move contents so they could view items underneath. They seized numerous coins, tokens, and medals, which were admitted as evidence at trial. No search warrant had been obtained — the officers relied solely on the arrest warrant.",
+      proceduralHistory: "Chimel was convicted of burglary in the Orange County Superior Court. The California Court of Appeal and the California Supreme Court affirmed, relying on the broad search-incident-to-arrest rule from United States v. Rabinowitz (1950). The U.S. Supreme Court granted certiorari.",
+      holding: "A search incident to a lawful arrest is limited to the arrestee's person and the area within the arrestee's immediate control — the area from which the arrestee might gain possession of a weapon or destructible evidence ('the grabbing area' or 'wingspan'). The full search of Chimel's house exceeded this permissible scope.",
+      reasoning: [
+        "The search-incident-to-arrest exception is justified by two rationales: (1) protecting officer safety by removing weapons the arrestee could reach, and (2) preventing the destruction of evidence within the arrestee's reach",
+        "These rationales do not justify searching rooms other than the one where the arrest occurs, or searching closed drawers and containers beyond the arrestee's reach",
+        "Overruled the broad rule of United States v. Rabinowitz (1950) and Harris v. United States (1947), which had permitted searches of the entire premises incident to arrest",
+        "If officers believe evidence is elsewhere in the house, they must obtain a search warrant — 'there is no comparable justification... for routinely searching any room other than that in which an arrest occurs'"
+      ],
+      keyQuotes: [
+        { text: "When an arrest is made, it is reasonable for the arresting officer to search the person arrested in order to remove any weapons that the latter might seek to use in order to resist arrest or effect his escape... In addition, it is entirely reasonable for the arresting officer to search for and seize any evidence on the arrestee's person in order to prevent its concealment or destruction.", attribution: "Justice Stewart, majority opinion" },
+        { text: "There is no comparable justification, however, for routinely searching any room other than that in which an arrest occurs — or, for that matter, for searching through all the desk drawers or other closed or concealed areas in that room itself.", attribution: "Justice Stewart, majority opinion" }
+      ],
+      significance: "Established the 'wingspan' or 'grabbing distance' rule that defines the spatial limits of a search incident to arrest. This foundational doctrine has been applied and refined in dozens of subsequent cases, including New York v. Belton (1981) for vehicles and Riley v. California (2014) for cell phones. Chimel remains the starting point for all search-incident-to-arrest analysis.",
+      dissent: "Justice White, joined by Justice Black, dissented, arguing the majority's rule was impractical and that officers making a lawful arrest should be able to search the premises to prevent destruction of evidence while they seek a warrant.",
+      relatedCases: ["United States v. Robinson (1973)", "New York v. Belton (1981)", "Arizona v. Gant (2009)", "Riley v. California (2014)"]
+    },
+    {
+      name: "Weeks v. United States",
+      cite: "232 U.S. 383 (1914)",
+      year: 1914,
+      topic: "Fourth Amendment — Search & Seizure",
+      subtopic: "Exclusionary Rule",
+      tags: ["4th Amend", "Landmark"],
+      vote: "9-0",
+      author: "Justice Day",
+      facts: "Fremont Weeks was arrested at his place of business by a local police officer acting without a warrant. Other officers and a United States Marshal then went to Weeks' home and, without a search warrant, entered by obtaining a key from a neighbor. They searched the house and seized papers, letters, and envelopes. Later that same day, police returned with the Marshal, again without a warrant, and seized additional letters and property. The seized documents were turned over to the U.S. Marshal and used as evidence to convict Weeks of using the mails for the purpose of transporting lottery tickets, in violation of federal law. Before trial, Weeks petitioned for the return of his property, but the court denied the motion.",
+      proceduralHistory: "Weeks was convicted in the U.S. District Court for the Western District of Missouri. He appealed to the U.S. Supreme Court, arguing the warrantless seizure of his papers violated the Fourth Amendment.",
+      holding: "Evidence obtained through an unreasonable search and seizure in violation of the Fourth Amendment is inadmissible in federal criminal proceedings. Federal courts must exclude such evidence to give effect to the constitutional guarantee.",
+      reasoning: [
+        "The Fourth Amendment was adopted in response to the abuses of general warrants and writs of assistance by the British Crown",
+        "If illegally seized evidence could be used in court, 'the protection of the Fourth Amendment... might as well be stricken from the Constitution'",
+        "The duty of courts is to uphold the Constitution — allowing illegally obtained evidence would make the judiciary complicit in violations of constitutional rights",
+        "The exclusionary rule is necessary to ensure that the Fourth Amendment is not merely 'a form of words' but an enforceable guarantee"
+      ],
+      keyQuotes: [
+        { text: "If letters and private documents can thus be seized and held and used in evidence against a citizen accused of an offense, the protection of the Fourth Amendment declaring his right to be secure against such searches and seizures is of no value, and, so far as those thus placed are concerned, might as well be stricken from the Constitution.", attribution: "Justice Day, majority opinion" }
+      ],
+      significance: "The first case to establish the exclusionary rule — the principle that illegally obtained evidence must be excluded from trial in federal courts. For nearly 50 years, the rule applied only to federal proceedings. In Mapp v. Ohio (1961), the Court extended it to the states. Weeks remains the foundational case for the entire exclusionary rule doctrine.",
+      dissent: "The decision was unanimous (9-0).",
+      relatedCases: ["Boyd v. United States (1886)", "Mapp v. Ohio (1961)", "United States v. Leon (1984)", "Hudson v. Michigan (2006)"]
+    },
+    {
+      name: "United States v. Leon",
+      cite: "468 U.S. 897 (1984)",
+      year: 1984,
+      topic: "Fourth Amendment — Search & Seizure",
+      subtopic: "Exclusionary Rule",
+      tags: ["4th Amend"],
+      vote: "6-3",
+      author: "Justice White",
+      facts: "Based on a confidential informant's tip, Burbank, California police conducted extensive surveillance of suspected drug traffickers Alberto Leon and others. An experienced narcotics detective prepared a lengthy affidavit detailing the surveillance and the informant's information. A state judge reviewed the affidavit and issued a search warrant for three residences and several automobiles. The resulting searches produced large quantities of drugs and other evidence. However, the District Court later found that the affidavit did not establish probable cause — the informant's information was stale and his reliability had not been established — and suppressed the evidence.",
+      proceduralHistory: "The U.S. District Court for the Central District of California suppressed the evidence. The Ninth Circuit Court of Appeals affirmed. The U.S. Supreme Court granted certiorari to consider whether a 'good faith' exception to the exclusionary rule should be recognized.",
+      holding: "The Fourth Amendment exclusionary rule should not be applied to bar the use of evidence obtained by officers acting in objectively reasonable reliance on a search warrant issued by a neutral and detached magistrate, even if the warrant is ultimately found to lack probable cause. This establishes the 'good faith exception' to the exclusionary rule.",
+      reasoning: [
+        "The exclusionary rule is not a personal constitutional right of the defendant but a judicially created remedy designed to deter police misconduct",
+        "Deterrence — the rule's primary rationale — is not served by suppressing evidence when officers act in objectively reasonable reliance on a warrant",
+        "An officer who obtains a warrant from a judge and executes it in good faith 'has done all that can reasonably be expected' — suppression would not deter future misconduct",
+        "The 'substantial social costs' of exclusion (letting guilty defendants go free) are not justified when police have acted reasonably",
+        "Four exceptions where good faith does not apply: (1) the magistrate was misled by false information in the affidavit; (2) the magistrate wholly abandoned the judicial role; (3) the affidavit was 'so lacking in indicia of probable cause as to render official belief in its existence entirely unreasonable'; (4) the warrant was so facially deficient that officers could not reasonably presume it to be valid"
+      ],
+      keyQuotes: [
+        { text: "The marginal or nonexistent benefits produced by suppressing evidence obtained in objectively reasonable reliance on a subsequently invalidated search warrant cannot justify the substantial costs of exclusion.", attribution: "Justice White, majority opinion" },
+        { text: "Penalizing the officer for the magistrate's error, rather than his own, cannot logically contribute to the deterrence of Fourth Amendment violations.", attribution: "Justice White, majority opinion" }
+      ],
+      significance: "Created the good faith exception to the exclusionary rule — the most significant limitation on Mapp v. Ohio's reach. The exception has been steadily expanded: to reliance on binding appellate precedent (Davis v. United States, 2011), to reliance on police databases (Herring v. United States, 2009), and to reliance on a statute later declared unconstitutional (Illinois v. Krull, 1987). Critics argue the exception has effectively gutted the exclusionary rule.",
+      dissent: "Justice Brennan, joined by Justice Marshall, dissented passionately, arguing the good faith exception would 'effectively destroy' the exclusionary rule. Brennan warned that police and magistrates would lose the incentive to ensure warrants are properly supported, and that the costs of the rule were not 'substantial' compared to the importance of constitutional rights. Justice Stevens also dissented.",
+      relatedCases: ["Mapp v. Ohio (1961)", "Herring v. United States (2009)", "Davis v. United States (2011)", "Utah v. Strieff (2016)"]
+    },
+    {
+      name: "Escobedo v. Illinois",
+      cite: "378 U.S. 478 (1964)",
+      year: 1964,
+      topic: "Fifth Amendment — Self-Incrimination",
+      subtopic: "Custodial Interrogation",
+      tags: ["5th Amend"],
+      vote: "5-4",
+      author: "Justice Goldberg",
+      facts: "On the night of January 19, 1960, Danny Escobedo's brother-in-law was fatally shot. Escobedo was arrested without a warrant and interrogated at police headquarters. He made no statement, and his lawyer obtained his release on a writ of habeas corpus. Eleven days later, Escobedo was arrested again after his accomplice, Benedict DiGerlando, told police that Escobedo had fired the fatal shots. During the second interrogation, Escobedo repeatedly asked to speak with his attorney, Warren Wolfson, who was present at the police station and repeatedly asked to see his client. Police refused both requests. An officer told Escobedo that DiGerlando had named him as the shooter, and Escobedo confronted DiGerlando, making statements that amounted to admissions of involvement. Escobedo was not advised of his right to remain silent. His incriminating statements were admitted at trial, and he was convicted of murder.",
+      proceduralHistory: "Escobedo was convicted of murder in the Circuit Court of Cook County, Illinois. The Illinois Supreme Court initially reversed, then on rehearing affirmed the conviction. The U.S. Supreme Court granted certiorari.",
+      holding: "When a police investigation has focused on a particular suspect, the suspect has been taken into custody, the suspect has requested and been denied the opportunity to consult with a lawyer, and the police have not effectively warned the suspect of the right to remain silent, statements elicited during interrogation are inadmissible.",
+      reasoning: [
+        "The right to counsel is not limited to trial — it must be available at 'critical stages' of criminal proceedings, including interrogation",
+        "The interrogation stage is 'critical' because it is when the adversarial process truly begins and statements are most likely to be elicited",
+        "Denying access to counsel during interrogation, when the suspect has requested it, undermines the entire right to effective representation at trial",
+        "A system that depends on confessions rather than independent investigation 'is less reliable and more subject to abuses than a system that depends on extrinsic evidence independently secured through skillful investigation'",
+        "The right to counsel and the right to remain silent are 'complementary' and 'interrelated'"
+      ],
+      keyQuotes: [
+        { text: "No system of criminal justice can, or should, survive if it comes to depend for its continued effectiveness on the citizens' abdication through unawareness of their constitutional rights.", attribution: "Justice Goldberg, majority opinion" },
+        { text: "If the exercise of constitutional rights will thwart the effectiveness of a system of law enforcement, then there is something very wrong with that system.", attribution: "Justice Goldberg, majority opinion" }
+      ],
+      significance: "A critical precursor to Miranda v. Arizona (1966). Escobedo established that the right to counsel applies during custodial interrogation, but its narrow holding (limited to suspects who request counsel) was soon superseded by Miranda's broader protections. The case marked the Court's shift from a voluntariness-based approach to a rights-based approach for interrogation.",
+      dissent: "Justice White, joined by Justices Clark and Stewart, dissented, arguing the decision would effectively prevent police from questioning any suspect. Justice Harlan wrote a separate dissent expressing concern that the majority was creating 'voluntary confessions' virtually impossible to obtain and warning of dire consequences for law enforcement.",
+      relatedCases: ["Massiah v. United States (1964)", "Miranda v. Arizona (1966)", "Edwards v. Arizona (1981)", "Moran v. Burbine (1986)"]
+    },
+    {
+      name: "Kyllo v. United States",
+      cite: "533 U.S. 27 (2001)",
+      year: 2001,
+      topic: "Fourth Amendment — Search & Seizure",
+      subtopic: "Reasonable Expectation of Privacy",
+      tags: ["4th Amend"],
+      vote: "5-4",
+      author: "Justice Scalia",
+      facts: "In 1992, a federal agent suspected Danny Kyllo of growing marijuana inside his home in Florence, Oregon, based on tips and subpoenaed utility records showing unusually high electricity usage. On January 16, 1992, at 3:20 a.m., the agent used a thermal imaging device (an Agema Thermovision 210) from a parked car across the street to scan Kyllo's triplex home. The scan took only a few minutes and revealed that the roof over the garage and a side wall were relatively hot compared to the rest of the home and substantially warmer than neighboring units — consistent with the use of high-intensity lamps for indoor marijuana cultivation. Based on the thermal imaging, tips, and utility records, the agent obtained a search warrant. The search revealed an indoor marijuana growing operation with over 100 plants.",
+      proceduralHistory: "Kyllo was indicted in the U.S. District Court for the District of Oregon. He moved to suppress the evidence. The District Court denied the motion. The Ninth Circuit remanded for an evidentiary hearing, then affirmed the denial of suppression, finding the thermal imager was 'non-intrusive.' The U.S. Supreme Court granted certiorari.",
+      holding: "The use of sense-enhancing technology to obtain information about the interior of a home that could not otherwise have been obtained without physical intrusion constitutes a search under the Fourth Amendment, at least where the technology is not in general public use, and requires a warrant.",
+      reasoning: [
+        "The home is the 'first among equals' in Fourth Amendment protection — 'at the very core' of the Amendment",
+        "Using technology to 'explore details of the home that would previously have been unknowable without physical intrusion' is a search",
+        "The government cannot use technology to 'shrink the realm of guaranteed privacy' — the question is not the quality of information obtained but whether the technology reveals details of the home's interior",
+        "The 'general public use' limitation ensures the rule adapts as technology evolves: once thermal imagers become commonplace, the analysis might change",
+        "Drawing the line at the home provides a 'firm but also bright' rule that does not require courts to evaluate the 'quality or quantity' of information obtained"
+      ],
+      keyQuotes: [
+        { text: "In the home, our cases show, all details are intimate details, because the entire area is held safe from prying government eyes.", attribution: "Justice Scalia, majority opinion" },
+        { text: "We think that obtaining by sense-enhancing technology any information regarding the interior of the home that could not otherwise have been obtained without physical intrusion into a constitutionally protected area constitutes a search — at least where (as here) the technology in question is not in general public use.", attribution: "Justice Scalia, majority opinion" }
+      ],
+      significance: "Established that technology-enhanced surveillance of the home is a Fourth Amendment search, even when conducted from a public vantage point. The case extended Katz's privacy framework to thermal imaging and foreshadowed later digital-privacy cases like Riley and Carpenter. The 'general public use' limitation remains debated — as surveillance technology becomes more common (drones, Wi-Fi sensing), courts must determine when the exception swallows the rule.",
+      dissent: "Justice Stevens, joined by Chief Justice Rehnquist and Justices O'Connor and Kennedy, dissented. Stevens argued that the thermal imager only detected heat radiating from the exterior of the home (not the interior) and disclosed no 'intimate details.' He criticized the 'general public use' standard as novel and unworkable.",
+      relatedCases: ["Katz v. United States (1967)", "California v. Ciraolo (1986)", "Florida v. Jardines (2013)", "Carpenter v. United States (2018)"]
+    },
+    {
+      name: "Powell v. Alabama",
+      cite: "287 U.S. 45 (1932)",
+      year: 1932,
+      topic: "Sixth Amendment — Right to Counsel",
+      subtopic: "Right to Appointed Counsel",
+      tags: ["6th Amend", "Landmark"],
+      vote: "7-2",
+      author: "Justice Sutherland",
+      facts: "In March 1931, nine young Black men — later known as the 'Scottsboro Boys' — were accused of raping two white women on a freight train traveling through Alabama. They were tried in Scottsboro, Alabama in a hostile, racially charged atmosphere, with large crowds and National Guard troops surrounding the courthouse. The defendants were all young (ages 13-20), illiterate, far from home, and facing the death penalty. The trial judge appointed 'all members of the bar' to represent the defendants, but no individual lawyer assumed specific responsibility. An out-of-state attorney who arrived the morning of trial offered to assist, and a reluctant local attorney was also drafted. The defendants received no meaningful opportunity to consult with counsel, prepare a defense, investigate the case, or call witnesses. All nine were convicted in a series of rapid-fire one-day trials, and eight were sentenced to death.",
+      proceduralHistory: "All nine defendants were convicted in the Circuit Court of Jackson County, Alabama. The Alabama Supreme Court affirmed eight of the death sentences (reversing one on grounds of the defendant's age). The U.S. Supreme Court granted certiorari on the right to counsel issue.",
+      holding: "In a capital case, where the defendant is unable to employ counsel and is incapable of adequately making his own defense because of ignorance, feeble-mindedness, illiteracy, or the like, it is the duty of the court, whether requested or not, to assign counsel for him as a necessary requisite of due process of law under the Fourteenth Amendment.",
+      reasoning: [
+        "The right to be heard would be 'of little avail if it did not comprehend the right to be heard by counsel'",
+        "Even an intelligent, educated layperson 'requires the guiding hand of counsel at every step in the proceedings against him' — without it, he faces 'the danger of conviction because he does not know how to establish his innocence'",
+        "The defendants were young, ignorant, illiterate, surrounded by hostile sentiment, hauled back and forth in the custody of soldiers, and tried in an atmosphere of 'tense, hostile and excited public sentiment'",
+        "The appointment of 'all members of the bar' was a hollow gesture — no individual attorney was responsible, and there was no time for preparation",
+        "Due process at minimum requires that in capital cases, defendants unable to employ counsel must have counsel appointed"
+      ],
+      keyQuotes: [
+        { text: "The right to be heard would be, in many cases, of little avail if it did not comprehend the right to be heard by counsel. Even the intelligent and educated layman has small and sometimes no skill in the science of law.", attribution: "Justice Sutherland, majority opinion" },
+        { text: "He lacks both the skill and knowledge adequately to prepare his defense, even though he have a perfect one. He requires the guiding hand of counsel at every step in the proceedings against him.", attribution: "Justice Sutherland, majority opinion" }
+      ],
+      significance: "The first major right-to-counsel case, establishing that due process requires appointment of counsel in capital cases. Set the foundation for Gideon v. Wainwright (1963), which extended the right to all felony cases. The Scottsboro Boys case is a landmark in both legal and civil rights history. The case drew international attention and became a symbol of racial injustice in the Jim Crow South.",
+      dissent: "Justices Butler and McReynolds dissented without written opinion.",
+      relatedCases: ["Johnson v. Zerbst (1938)", "Betts v. Brady (1942)", "Gideon v. Wainwright (1963)", "Argersinger v. Hamlin (1972)"]
+    },
+    {
+      name: "Wong Sun v. United States",
+      cite: "371 U.S. 471 (1963)",
+      year: 1963,
+      topic: "Fourth Amendment — Search & Seizure",
+      subtopic: "Exclusionary Rule",
+      tags: ["4th Amend"],
+      vote: "5-4",
+      author: "Justice Brennan",
+      facts: "Federal narcotics agents in San Francisco received a tip from an informant named Hom Way, who had been arrested for narcotics possession. Hom Way told agents he had purchased an ounce of heroin from a person known as 'Blackie Toy' and led them to a laundry on Leavenworth Street. At 6 a.m., agents broke down the door of the laundry where James Wah Toy lived with his family. Toy ran to his bedroom, and agents followed with drawn weapons. Toy then made incriminating statements and implicated another person, Johnny Yee. Agents went to Yee, who surrendered heroin and implicated Wong Sun. Agents then arrested Wong Sun. Several days later, after being released on his own recognizance, Wong Sun voluntarily returned to the narcotics bureau and made an unsigned confession. The question was whether the evidence — Toy's statements, Yee's heroin, and Wong Sun's confession — were admissible or were 'fruit of the poisonous tree' flowing from the illegal arrests.",
+      proceduralHistory: "Toy and Wong Sun were convicted in the U.S. District Court for the Northern District of California. The Ninth Circuit Court of Appeals affirmed. The U.S. Supreme Court granted certiorari.",
+      holding: "Evidence obtained as an indirect result of an unconstitutional search or seizure ('fruit of the poisonous tree') must be suppressed unless the connection between the illegality and the evidence is 'so attenuated as to dissipate the taint.' Wong Sun's voluntary confession, made days after his release, was sufficiently attenuated and thus admissible; Toy's statements and Yee's heroin were not.",
+      reasoning: [
+        "The exclusionary rule extends beyond the direct products of a Fourth Amendment violation to include all evidence derived from the initial illegality — the 'fruit of the poisonous tree' doctrine",
+        "The core question is 'whether, granting establishment of the primary illegality, the evidence to which instant objection is made has been come at by exploitation of that illegality or instead by means sufficiently distinguishable to be purged of the primary taint'",
+        "Toy's verbal statements were the direct product of his illegal arrest — the 'fruit of the poisonous tree'",
+        "The heroin surrendered by Yee was also fruit of the illegal arrest, as agents learned of Yee only through Toy's illegally obtained statements",
+        "Wong Sun's confession was admissible because he had been released and voluntarily returned days later — this 'break in the causal chain' between the arrest and the statement was sufficient attenuation"
+      ],
+      keyQuotes: [
+        { text: "We need not hold that all evidence is 'fruit of the poisonous tree' simply because it would not have come to light but for the illegal actions of the police. Rather, the more apt question in such a case is whether, granting establishment of the primary illegality, the evidence... has been come at by exploitation of that illegality or instead by means sufficiently distinguishable to be purged of the primary taint.", attribution: "Justice Brennan, majority opinion" }
+      ],
+      significance: "Established the 'fruit of the poisonous tree' doctrine, which extends the exclusionary rule to all evidence derived from an unconstitutional search or seizure, not just the directly seized items. Also created the 'attenuation doctrine' — one of three major exceptions to the fruit of the poisonous tree rule (along with independent source and inevitable discovery). The case remains the foundational authority on derivative evidence.",
+      dissent: "Justice Clark, joined by Justices Harlan, Stewart, and White, dissented in part, arguing the evidence was sufficiently attenuated from any illegality.",
+      relatedCases: ["Silverthorne Lumber Co. v. United States (1920)", "Nardone v. United States (1939)", "Nix v. Williams (1984)", "Utah v. Strieff (2016)"]
+    },
+    {
+      name: "Jackson v. Virginia",
+      cite: "443 U.S. 307 (1979)",
+      year: 1979,
+      topic: "Fourteenth Amendment — Due Process",
+      subtopic: "Burden of Proof",
+      tags: ["14th Amend"],
+      vote: "9-0",
+      author: "Justice Stewart",
+      facts: "Mary Cole Houston was found dead by gunshot wounds in her home in Chesterfield County, Virginia. James Jackson had been seen with Houston earlier that day. A .32-caliber revolver was found in Jackson's apartment. Jackson told acquaintances varying stories about the incident. At trial, the evidence was largely circumstantial: Jackson had a revolver of the same caliber as the murder weapon, had been with the victim, and had given inconsistent accounts. Jackson was convicted of first-degree murder. On appeal, the Virginia Supreme Court found the evidence insufficient to prove premeditation beyond a reasonable doubt but held the evidence sufficient for second-degree murder. Jackson filed for federal habeas relief, arguing the evidence was constitutionally insufficient.",
+      proceduralHistory: "Jackson was convicted of first-degree murder in the Chesterfield County Circuit Court. The Virginia Supreme Court reduced the conviction to second-degree murder. Jackson sought federal habeas corpus relief. The U.S. District Court denied relief. The Fourth Circuit reversed, finding insufficient evidence. The U.S. Supreme Court granted certiorari.",
+      holding: "In reviewing the sufficiency of evidence in a criminal case — including on federal habeas review — the relevant question is whether, after viewing the evidence in the light most favorable to the prosecution, any rational trier of fact could have found the essential elements of the crime beyond a reasonable doubt.",
+      reasoning: [
+        "In re Winship (1970) established that due process requires proof beyond a reasonable doubt, but did not define how appellate courts should review sufficiency of the evidence",
+        "A 'no evidence' standard of review is insufficient to enforce the Winship guarantee — due process requires more",
+        "The proper standard asks whether the evidence, viewed favorably to the prosecution, could convince any rational factfinder of guilt beyond a reasonable doubt",
+        "This standard respects the factfinder's role while ensuring constitutional protections are meaningful",
+        "The standard applies to both direct and circumstantial evidence cases"
+      ],
+      keyQuotes: [
+        { text: "The relevant question is whether, after viewing the evidence in the light most favorable to the prosecution, any rational trier of fact could have found the essential elements of the crime beyond a reasonable doubt.", attribution: "Justice Stewart, majority opinion" }
+      ],
+      significance: "Established the standard for reviewing the sufficiency of evidence in criminal cases that remains in universal use today. The Jackson standard applies in both direct appeals and federal habeas corpus proceedings. It ensures that the reasonable doubt standard from Winship has teeth — convictions based on evidence that no rational person could find sufficient must be reversed.",
+      dissent: "The decision was unanimous on the standard, though Justice Stevens concurred separately on the application.",
+      relatedCases: ["In re Winship (1970)", "Thompson v. Louisville (1960)", "Fiore v. White (2001)", "Coleman v. Johnson (2012)"]
+    },
+    {
+      name: "New Jersey v. T.L.O.",
+      cite: "469 U.S. 325 (1985)",
+      year: 1985,
+      topic: "Fourth Amendment — Search & Seizure",
+      subtopic: "Exceptions to Warrant Requirement",
+      tags: ["4th Amend"],
+      vote: "6-3",
+      author: "Justice White",
+      facts: "A teacher at Piscataway High School in Middlesex County, New Jersey, discovered two girls smoking cigarettes in a school lavatory in violation of school rules. She brought them to the assistant vice principal, Theodore Choplick. One girl admitted smoking; the other, identified only as T.L.O. (a 14-year-old freshman), denied it. Choplick demanded to see T.L.O.'s purse, opened it, and found a pack of cigarettes. While retrieving the cigarettes, he also noticed rolling papers commonly associated with marijuana use. Suspecting drug activity, he searched the purse more thoroughly and found marijuana, a pipe, plastic bags, a substantial quantity of money in small denominations, an index card listing students who owed T.L.O. money, and two letters implicating her in marijuana dealing. The evidence was turned over to police, and T.L.O. confessed. She was charged with delinquency.",
+      proceduralHistory: "The Juvenile and Domestic Relations Court of Middlesex County denied T.L.O.'s motion to suppress and found her delinquent. The Appellate Division affirmed. The New Jersey Supreme Court reversed, holding the search unreasonable. The U.S. Supreme Court granted certiorari.",
+      holding: "School officials may search students without a warrant or probable cause when the search is (1) justified at its inception — there are reasonable grounds for suspecting the search will turn up evidence of a rule or law violation — and (2) reasonable in scope — the measures adopted are reasonably related to the objectives of the search and not excessively intrusive in light of the student's age and sex and the nature of the infraction.",
+      reasoning: [
+        "The Fourth Amendment applies to searches by public school officials — they are state actors, and students do not 'shed their constitutional rights at the schoolhouse gate'",
+        "However, the warrant and probable cause requirements are impractical in the school setting, where 'swift and informal disciplinary procedures' are needed",
+        "The standard is 'reasonableness, under all the circumstances' — balancing the student's privacy interests against the school's need to maintain order and discipline",
+        "The two-part test requires that the search be both initially justified and reasonable in scope",
+        "Choplick's search was justified: the rolling papers gave reasonable suspicion of marijuana, and the further search was reasonably related to that suspicion"
+      ],
+      keyQuotes: [
+        { text: "Although this Court may take notice of the difficulty of maintaining discipline in the public schools today, the situation is not so dire that students in the schools may claim no legitimate expectations of privacy.", attribution: "Justice White, majority opinion" },
+        { text: "Under ordinary circumstances, a search of a student by a teacher or other school official will be justified at its inception when there are reasonable grounds for suspecting that the search will turn up evidence that the student has violated or is violating either the law or the rules of the school.", attribution: "Justice White, majority opinion" }
+      ],
+      significance: "Established the 'reasonable suspicion' standard for school searches — a lower bar than probable cause but still requiring individualized suspicion. The case has been applied to searches of lockers, backpacks, and, increasingly, electronic devices. It also applies to drug testing (Vernonia School District v. Acton, 1995) and was extended to strip searches with heightened standards in Safford v. Redding (2009).",
+      dissent: "Justice Brennan, joined by Justice Marshall, dissented in part, arguing that the 'reasonable grounds' standard was too vague and would allow arbitrary searches. Justice Stevens dissented separately, arguing the initial search (for cigarettes) was unreasonable because possessing cigarettes was not illegal and finding them would not prove T.L.O. had been smoking in the lavatory.",
+      relatedCases: ["Vernonia School District v. Acton (1995)", "Board of Education v. Earls (2002)", "Safford v. Redding (2009)"]
+    },
+    {
+      name: "Padilla v. Kentucky",
+      cite: "559 U.S. 356 (2010)",
+      year: 2010,
+      topic: "Sixth Amendment — Right to Counsel",
+      subtopic: "Effective Assistance of Counsel",
+      tags: ["6th Amend"],
+      vote: "7-2",
+      author: "Justice Stevens",
+      facts: "Jose Padilla, a native of Honduras and lawful permanent resident of the United States for more than 40 years, was a Vietnam War veteran who had served honorably in the U.S. armed forces. In 2001-2002, he was charged with drug distribution offenses in Kentucky. His attorney advised him to plead guilty, telling him he 'did not have to worry about immigration status since he had been in the country so long.' In reality, Padilla's drug conviction made his deportation virtually automatic under federal immigration law. Had Padilla known the true immigration consequences, he claimed he would have insisted on going to trial or at least attempted to negotiate a plea that would not trigger mandatory deportation. After pleading guilty and discovering the deportation consequences, Padilla moved to vacate his guilty plea on ineffective assistance of counsel grounds.",
+      proceduralHistory: "Padilla pled guilty in the Kentucky courts. He filed a post-conviction motion to vacate the plea. The trial court denied relief. The Kentucky Supreme Court affirmed, holding that the Sixth Amendment does not protect against erroneous advice about 'collateral consequences' like deportation. The U.S. Supreme Court granted certiorari.",
+      holding: "The Sixth Amendment requires defense counsel to inform a noncitizen client whether a guilty plea carries a risk of deportation. When the deportation consequence is clear from the face of the statute, counsel must advise the client that the plea will result in deportation. Failure to do so constitutes deficient performance under Strickland's first prong.",
+      reasoning: [
+        "Deportation is 'an integral part — indeed, sometimes the most important part — of the penalty that may be imposed on noncitizen defendants who plead guilty to specified crimes'",
+        "The distinction between 'direct' and 'collateral' consequences is inappropriate when the consequence is deportation — a 'particularly severe penalty' that may be more significant to the defendant than any prison sentence",
+        "Immigration law is now so 'enmeshed' with the criminal justice system that 'informed consideration of possible deportation can only benefit both the State and noncitizen defendants'",
+        "When the deportation consequence is 'truly clear' from the statute, as here, counsel must give correct advice; when the law is unclear, counsel must advise that there may be immigration consequences",
+        "The decision does not address Strickland's second prong (prejudice) — that was left for remand"
+      ],
+      keyQuotes: [
+        { text: "We have long recognized that deportation is a particularly severe penalty, which may be of greater concern to a convicted alien than any potential jail sentence.", attribution: "Justice Stevens, majority opinion" },
+        { text: "It is our responsibility under the Constitution to ensure that no criminal defendant — whether a citizen or not — is left to the mercies of incompetent counsel.", attribution: "Justice Stevens, majority opinion" }
+      ],
+      significance: "Extended Strickland's ineffective assistance framework to require affirmative advice about immigration consequences of guilty pleas — a landmark at the intersection of criminal law and immigration law. The decision effectively requires criminal defense attorneys to have basic competence in immigration law or to consult with immigration counsel. Has generated extensive follow-up litigation about what constitutes adequate immigration advice and whether the rule applies retroactively (Chaidez v. United States, 2013 — held not retroactive).",
+      dissent: "Justice Scalia, joined by Justice Thomas, dissented, arguing there is no basis in the Sixth Amendment for requiring counsel to advise about consequences beyond the criminal sentence. Scalia warned the decision would open the door to claims based on counsel's failure to advise about other 'collateral' consequences (loss of professional licenses, sex offender registration, etc.).",
+      relatedCases: ["Strickland v. Washington (1984)", "Hill v. Lockhart (1985)", "INS v. St. Cyr (2001)", "Chaidez v. United States (2013)", "Lee v. United States (2017)"]
+    }
+  ]
+};
+
+let selectedTopic = null;
+let selectedSubtopic = null;
+let selectedCase = null;
+let notes = {};
+
+function init() {
+  renderTopicTree();
+  renderCases();
+}
+
+function renderTopicTree() {
+  const tree = document.getElementById('topicTree');
+  tree.innerHTML = '';
+
+  const allItem = document.createElement('div');
+  allItem.className = 'topic-item' + (selectedTopic === null ? ' active' : '');
+  allItem.innerHTML = '<span style="width:12px"></span> All Cases';
+  allItem.onclick = () => { selectedTopic = null; selectedSubtopic = null; renderTopicTree(); renderCases(); };
+  tree.appendChild(allItem);
+
+  DATA.topics.forEach(topic => {
+    const isExpanded = selectedTopic === topic.name;
+    const item = document.createElement('div');
+    item.className = 'topic-item' + (selectedTopic === topic.name && !selectedSubtopic ? ' active' : '') + (isExpanded ? ' expanded' : '');
+    item.innerHTML = `<span class="arrow">&#9654;</span> ${topic.name.split('\u2014')[0].trim()}`;
+    item.onclick = () => {
+      selectedTopic = topic.name;
+      selectedSubtopic = null;
+      renderTopicTree();
+      renderCases();
+    };
+    tree.appendChild(item);
+
+    const subtopics = document.createElement('div');
+    subtopics.className = 'subtopics' + (isExpanded ? ' open' : '');
+    topic.subtopics.forEach(sub => {
+      const subItem = document.createElement('div');
+      subItem.className = 'subtopic-item' + (selectedSubtopic === sub ? ' active' : '');
+      subItem.textContent = sub;
+      subItem.onclick = (e) => {
+        e.stopPropagation();
+        selectedTopic = topic.name;
+        selectedSubtopic = sub;
+        renderTopicTree();
+        renderCases();
+      };
+      subtopics.appendChild(subItem);
+    });
+    tree.appendChild(subtopics);
+  });
+}
+
+function getFilteredCases() {
+  return DATA.cases.filter(c => {
+    if (selectedTopic && c.topic !== selectedTopic) return false;
+    if (selectedSubtopic && c.subtopic !== selectedSubtopic) return false;
+    return true;
+  });
+}
+
+function renderCases(filter = '') {
+  const list = document.getElementById('caseList');
+  const title = document.getElementById('topicTitle');
+  const subtitle = document.getElementById('topicSubtitle');
+
+  if (selectedSubtopic) {
+    title.textContent = selectedSubtopic;
+    subtitle.textContent = selectedTopic;
+  } else if (selectedTopic) {
+    title.textContent = selectedTopic;
+    subtitle.textContent = `${getFilteredCases().length} cases`;
+  } else {
+    title.textContent = 'All Cases';
+    subtitle.textContent = `${DATA.cases.length} landmark cases in criminal procedure`;
+  }
+
+  let cases = getFilteredCases();
+  if (filter) {
+    const f = filter.toLowerCase();
+    cases = cases.filter(c =>
+      c.name.toLowerCase().includes(f) ||
+      c.holding.toLowerCase().includes(f) ||
+      c.facts.toLowerCase().includes(f) ||
+      c.subtopic.toLowerCase().includes(f)
+    );
+  }
+
+  cases.sort((a, b) => a.year - b.year);
+
+  list.innerHTML = '';
+  cases.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'case-card' + (selectedCase === c.name ? ' active' : '');
+    const tagClass = c.topic.includes('Fourth') ? 'tag-4th' :
+                     c.topic.includes('Fifth') ? 'tag-5th' :
+                     c.topic.includes('Sixth') ? 'tag-6th' : 'tag-14th';
+    card.innerHTML = `
+      <div class="case-name">${c.name}</div>
+      <div class="case-cite">${c.cite} &middot; ${c.vote}</div>
+      <div class="case-snippet">${c.holding.substring(0, 140)}...</div>
+      <div class="tags">
+        ${c.tags.map(t => `<span class="tag ${t === 'Landmark' ? 'tag-landmark' : tagClass}">${t}</span>`).join('')}
+      </div>
+    `;
+    card.onclick = () => { selectedCase = c.name; renderCases(filter); renderDetail(c); };
+    list.appendChild(card);
+  });
+}
+
+function renderDetail(c) {
+  const panel = document.getElementById('detailPanel');
+  const noteKey = c.name;
+  const hasNote = notes[noteKey];
+  const tagClass = c.topic.includes('Fourth') ? 'tag-4th' :
+                   c.topic.includes('Fifth') ? 'tag-5th' :
+                   c.topic.includes('Sixth') ? 'tag-6th' : 'tag-14th';
+
+  panel.innerHTML = `
+    <div class="detail-header">
+      <h3>${c.name}</h3>
+      <div class="cite">${c.cite}</div>
+      <div class="detail-meta">
+        <div class="meta-item"><strong>Vote:</strong> ${c.vote}</div>
+        <div class="meta-item"><strong>Author:</strong> ${c.author}</div>
+        <div class="meta-item"><strong>Year:</strong> ${c.year}</div>
+        <div class="meta-item"><strong>Topic:</strong> ${c.subtopic}</div>
+      </div>
+      <div class="tags" style="margin-top:0.5rem">
+        ${c.tags.map(t => `<span class="tag ${t === 'Landmark' ? 'tag-landmark' : tagClass}">${t}</span>`).join('')}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Facts</h4>
+      <p>${c.facts}</p>
+    </div>
+
+    <div class="detail-section">
+      <h4>Procedural History</h4>
+      <p>${c.proceduralHistory}</p>
+    </div>
+
+    <div class="detail-section">
+      <h4>Holding</h4>
+      <div class="holding-box">${c.holding}</div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Reasoning</h4>
+      <ul>${c.reasoning.map(r => `<li>${r}</li>`).join('')}</ul>
+    </div>
+
+    ${c.keyQuotes ? `<div class="detail-section">
+      <h4>Key Quotes</h4>
+      ${c.keyQuotes.map(q => `<div class="quote-box">"${q.text}"<div class="attribution">— ${q.attribution}</div></div>`).join('')}
+    </div>` : ''}
+
+    <div class="detail-section">
+      <h4>Significance</h4>
+      <p>${c.significance}</p>
+    </div>
+
+    ${c.dissent ? `<div class="detail-section">
+      <h4>Dissent</h4>
+      <p>${c.dissent}</p>
+    </div>` : ''}
+
+    ${c.relatedCases ? `<div class="detail-section">
+      <h4>Related Cases</h4>
+      <div class="related-cases">
+        ${c.relatedCases.map(rc => `<span class="related-case" onclick="jumpToCase('${rc.split(' (')[0]}')">${rc}</span>`).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="detail-section">
+      <h4>Your Notes</h4>
+      ${hasNote
+        ? `<div class="note-text" onclick="editNote('${noteKey}')">${notes[noteKey]}</div>`
+        : `<button class="add-note" onclick="editNote('${noteKey}')">+ Add study notes for this case...</button>`
+      }
+    </div>
+  `;
+}
+
+function jumpToCase(name) {
+  const c = DATA.cases.find(cs => cs.name === name);
+  if (c) {
+    selectedCase = c.name;
+    selectedTopic = c.topic;
+    selectedSubtopic = null;
+    renderTopicTree();
+    renderCases();
+    renderDetail(c);
+  }
+}
+
+function editNote(key) {
+  const section = document.querySelector('.detail-section:last-child');
+  section.innerHTML = `
+    <h4>Your Notes</h4>
+    <textarea class="note-input" id="noteInput" placeholder="Add your notes, analysis, or exam tips...">${notes[key] || ''}</textarea>
+  `;
+  const input = document.getElementById('noteInput');
+  input.focus();
+  input.onblur = () => {
+    const val = input.value.trim();
+    if (val) notes[key] = val;
+    else delete notes[key];
+    const c = DATA.cases.find(c => c.name === key);
+    if (c) renderDetail(c);
+  };
+}
+
+function filterCases(val) {
+  renderCases(val);
+}
+
+function exportToWord() {
+  // Build HTML content for the Word document
+  let cases = selectedTopic ? getFilteredCases() : DATA.cases;
+  cases.sort((a, b) => a.year - b.year);
+
+  // Group cases by topic
+  const grouped = {};
+  DATA.topics.forEach(t => { grouped[t.name] = []; });
+  cases.forEach(c => {
+    if (grouped[c.topic]) grouped[c.topic].push(c);
+  });
+
+  let html = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 1.5; color: #222; margin: 1in; }
+  h1 { font-size: 22pt; text-align: center; margin-bottom: 4pt; color: #333; }
+  .doc-subtitle { text-align: center; font-size: 11pt; color: #666; margin-bottom: 24pt; }
+  h2 { font-size: 16pt; color: #2c4a1e; border-bottom: 2pt solid #2c4a1e; padding-bottom: 4pt; margin-top: 28pt; margin-bottom: 12pt; page-break-before: auto; }
+  h3 { font-size: 14pt; color: #333; margin-top: 20pt; margin-bottom: 6pt; }
+  .case-cite { font-size: 11pt; color: #666; margin-bottom: 2pt; }
+  .case-meta { font-size: 10pt; color: #888; margin-bottom: 10pt; }
+  .section-label { font-size: 10pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #8b5e3c; margin-top: 10pt; margin-bottom: 4pt; }
+  .holding { background: #f5ebe0; border-left: 3pt solid #8b5e3c; padding: 8pt 12pt; font-style: italic; margin: 8pt 0; }
+  .quote { background: #f8f6f3; border-left: 3pt solid #c4b5a3; padding: 6pt 10pt; font-style: italic; color: #555; margin: 6pt 0; }
+  .quote-attr { font-style: normal; font-size: 9pt; color: #999; margin-top: 3pt; }
+  ul { margin-left: 18pt; }
+  li { margin-bottom: 4pt; }
+  p { margin-bottom: 6pt; }
+  .related { font-size: 10pt; color: #666; }
+  .note { background: #ffffed; border: 1pt solid #e6e6b8; padding: 8pt; margin: 6pt 0; font-size: 11pt; }
+  .note-label { font-size: 9pt; font-weight: bold; color: #8b7e2a; text-transform: uppercase; }
+  .toc-entry { margin-left: 20pt; font-size: 11pt; margin-bottom: 2pt; }
+  .page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+<h1>Criminal Procedure Case Outline</h1>
+<p class="doc-subtitle">CaseOutliner Export &mdash; ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+
+<h2>Table of Contents</h2>
+`;
+
+  // TOC
+  DATA.topics.forEach(topic => {
+    if (grouped[topic.name] && grouped[topic.name].length > 0) {
+      html += `<p style="font-weight:bold; margin-top:8pt; margin-bottom:2pt;">${topic.name}</p>`;
+      grouped[topic.name].forEach(c => {
+        html += `<p class="toc-entry">${c.name}, ${c.cite}</p>`;
+      });
+    }
+  });
+
+  // Cases by topic
+  DATA.topics.forEach(topic => {
+    if (!grouped[topic.name] || grouped[topic.name].length === 0) return;
+    html += `<h2 class="page-break">${topic.name}</h2>`;
+
+    grouped[topic.name].forEach(c => {
+      html += `
+<h3>${c.name}</h3>
+<p class="case-cite">${c.cite}</p>
+<p class="case-meta">Vote: ${c.vote} | Author: ${c.author} | Topic: ${c.subtopic}</p>
+
+<p class="section-label">Facts</p>
+<p>${c.facts}</p>
+
+<p class="section-label">Procedural History</p>
+<p>${c.proceduralHistory}</p>
+
+<p class="section-label">Holding</p>
+<div class="holding">${c.holding}</div>
+
+<p class="section-label">Reasoning</p>
+<ul>${c.reasoning.map(r => `<li>${r}</li>`).join('')}</ul>
+`;
+
+      if (c.keyQuotes && c.keyQuotes.length > 0) {
+        html += `<p class="section-label">Key Quotes</p>`;
+        c.keyQuotes.forEach(q => {
+          html += `<div class="quote">"${q.text}"<p class="quote-attr">&mdash; ${q.attribution}</p></div>`;
+        });
+      }
+
+      html += `
+<p class="section-label">Significance</p>
+<p>${c.significance}</p>
+`;
+
+      if (c.dissent) {
+        html += `<p class="section-label">Dissent</p><p>${c.dissent}</p>`;
+      }
+
+      if (c.relatedCases) {
+        html += `<p class="section-label">Related Cases</p><p class="related">${c.relatedCases.join(' &bull; ')}</p>`;
+      }
+
+      if (notes[c.name]) {
+        html += `<div class="note"><p class="note-label">Personal Notes</p><p>${notes[c.name]}</p></div>`;
+      }
+
+      html += `<hr style="border:none; border-top:1pt solid #ddd; margin: 16pt 0;">`;
+    });
+  });
+
+  html += `</body></html>`;
+
+  // Open in new window for print-to-PDF
+  const printWin = window.open('', '_blank');
+  printWin.document.write(html);
+  printWin.document.close();
+  setTimeout(() => { printWin.print(); }, 500);
+}
+
+init();
+</script>
+</body>
+</html>
