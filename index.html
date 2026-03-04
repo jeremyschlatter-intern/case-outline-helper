@@ -1419,6 +1419,16 @@ function renderDetail(c) {
     </div>
 
     <div class="detail-section">
+      <h4>Holding</h4>
+      <div class="holding-box">${c.holding}</div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Significance</h4>
+      <p>${c.significance}</p>
+    </div>
+
+    <div class="detail-section">
       <h4>Facts</h4>
       <p>${c.facts}</p>
     </div>
@@ -1426,11 +1436,6 @@ function renderDetail(c) {
     <div class="detail-section">
       <h4>Procedural History</h4>
       <p>${c.proceduralHistory}</p>
-    </div>
-
-    <div class="detail-section">
-      <h4>Holding</h4>
-      <div class="holding-box">${c.holding}</div>
     </div>
 
     <div class="detail-section">
@@ -1442,11 +1447,6 @@ function renderDetail(c) {
       <h4>Key Quotes</h4>
       ${c.keyQuotes.map(q => `<div class="quote-box">"${q.text}"<div class="attribution">— ${q.attribution}</div></div>`).join('')}
     </div>` : ''}
-
-    <div class="detail-section">
-      <h4>Significance</h4>
-      <p>${c.significance}</p>
-    </div>
 
     ${c.dissent ? `<div class="detail-section">
       <h4>Dissent</h4>
@@ -1576,14 +1576,17 @@ function exportToWord() {
 <p class="case-cite">${c.cite}</p>
 <p class="case-meta">Vote: ${c.vote} | Author: ${c.author} | Topic: ${c.subtopic}</p>
 
+<p class="section-label">Holding</p>
+<div class="holding">${c.holding}</div>
+
+<p class="section-label">Significance</p>
+<p>${c.significance}</p>
+
 <p class="section-label">Facts</p>
 <p>${c.facts}</p>
 
 <p class="section-label">Procedural History</p>
 <p>${c.proceduralHistory}</p>
-
-<p class="section-label">Holding</p>
-<div class="holding">${c.holding}</div>
 
 <p class="section-label">Reasoning</p>
 <ul>${c.reasoning.map(r => `<li>${r}</li>`).join('')}</ul>
@@ -1597,8 +1600,6 @@ function exportToWord() {
       }
 
       html += `
-<p class="section-label">Significance</p>
-<p>${c.significance}</p>
 `;
 
       if (c.dissent) {
