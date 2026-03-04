@@ -421,6 +421,86 @@
     border-color: var(--accent-light);
   }
 
+  .mode-active {
+    background: rgba(255,255,255,0.35) !important;
+    border-color: rgba(255,255,255,0.6) !important;
+  }
+
+  .exam-issue {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.75rem;
+    box-shadow: var(--shadow);
+  }
+
+  .exam-issue h3 {
+    font-family: 'Lora', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+
+  .exam-rule {
+    background: var(--accent-bg);
+    border-left: 3px solid var(--accent);
+    padding: 0.6rem 0.9rem;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.84rem;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+    font-style: italic;
+  }
+
+  .exam-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-top: 0.6rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .exam-elements {
+    font-size: 0.82rem;
+    padding-left: 1.1rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .exam-elements li {
+    margin-bottom: 0.2rem;
+    line-height: 1.4;
+  }
+
+  .exam-trigger {
+    font-size: 0.8rem;
+    background: #fff8ed;
+    border: 1px solid #f0e0c0;
+    border-radius: 5px;
+    padding: 0.35rem 0.6rem;
+    margin: 0.2rem 0;
+    display: inline-block;
+    margin-right: 0.3rem;
+  }
+
+  .exam-distinction {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+    padding-left: 0.6rem;
+    border-left: 2px solid var(--border);
+  }
+
+  .exam-cite {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
   .search-bar {
     padding: 0.75rem 1.2rem;
     border-bottom: 1px solid var(--border);
@@ -454,10 +534,16 @@
     <h1>CaseOutliner</h1>
     <p>Criminal Procedure — Case Law Study Tool</p>
   </div>
-  <button class="export-btn" onclick="exportToWord()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-    Export to PDF
-  </button>
+  <div style="display:flex;gap:0.5rem;align-items:center;">
+    <button class="export-btn" id="modeToggle" onclick="toggleExamMode()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Exam Mode
+    </button>
+    <button class="export-btn" onclick="exportToWord()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Export PDF
+    </button>
+  </div>
 </header>
 
 <div class="app-layout">
@@ -1406,6 +1492,7 @@ function filterCases(val) {
 }
 
 function exportToWord() {
+  if (examMode) return exportExamPDF();
   // Build HTML content for the Word document
   let cases = selectedTopic ? getFilteredCases() : DATA.cases;
   cases.sort((a, b) => a.year - b.year);
@@ -1522,6 +1609,451 @@ function exportToWord() {
   printWin.document.write(html);
   printWin.document.close();
   setTimeout(() => { printWin.print(); }, 500);
+}
+
+function exportExamPDF() {
+  let html = `<html><head><meta charset="UTF-8"><style>
+  body { font-family: 'Times New Roman', Times, serif; font-size: 11pt; line-height: 1.4; color: #222; margin: 0.75in; }
+  h1 { font-size: 20pt; text-align: center; margin-bottom: 4pt; }
+  .subtitle { text-align: center; font-size: 10pt; color: #666; margin-bottom: 18pt; }
+  h2 { font-size: 15pt; color: #2c4a1e; border-bottom: 2pt solid #2c4a1e; padding-bottom: 3pt; margin-top: 20pt; margin-bottom: 8pt; }
+  h3 { font-size: 12pt; color: #333; margin-top: 14pt; margin-bottom: 4pt; font-style: italic; }
+  .rule { background: #f5ebe0; border-left: 3pt solid #8b5e3c; padding: 6pt 10pt; font-style: italic; margin: 6pt 0; font-size: 11pt; }
+  .label { font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #8b5e3c; margin-top: 8pt; margin-bottom: 3pt; }
+  ol, ul { margin-left: 16pt; margin-bottom: 4pt; }
+  li { margin-bottom: 3pt; }
+  .trigger { display: inline-block; background: #fff8ed; border: 1pt solid #e8d5b0; padding: 2pt 6pt; margin: 1pt 2pt; font-size: 9pt; border-radius: 3pt; }
+  .distinction { font-size: 10.5pt; padding-left: 8pt; border-left: 2pt solid #ccc; margin-bottom: 4pt; line-height: 1.4; }
+  .cases { font-size: 9pt; color: #666; font-style: italic; margin-top: 4pt; }
+  .page-break { page-break-before: always; }
+  hr { border: none; border-top: 1pt solid #ddd; margin: 12pt 0; }
+  </style></head><body>
+  <h1>Criminal Procedure — Issue-Spotting Exam Outline</h1>
+  <p class="subtitle">CaseOutliner Export — ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+  `;
+
+  EXAM_OUTLINE.forEach((topic, i) => {
+    html += `<h2${i > 0 ? ' class="page-break"' : ''}>${topic.topic}</h2>`;
+    topic.sections.forEach(sec => {
+      html += `<h3>${sec.issue}</h3>`;
+      html += `<p class="label">Rule</p><div class="rule">${sec.rule}</div>`;
+      html += `<p class="label">Elements / Test</p><ol>${sec.elements.map(e => `<li>${e}</li>`).join('')}</ol>`;
+      html += `<p class="label">Fact Pattern Triggers</p><div>${sec.triggers.map(t => `<span class="trigger">${t}</span>`).join(' ')}</div>`;
+      html += `<p class="label">Key Distinctions</p>${sec.distinctions.map(d => `<div class="distinction">${d}</div>`).join('')}`;
+      html += `<p class="cases">${sec.cases.join(' • ')}</p>`;
+      html += `<hr>`;
+    });
+  });
+
+  html += `</body></html>`;
+  const printWin = window.open('', '_blank');
+  printWin.document.write(html);
+  printWin.document.close();
+  setTimeout(() => { printWin.print(); }, 500);
+}
+
+// ===== EXAM MODE DATA =====
+const EXAM_OUTLINE = [
+  {
+    topic: "Fourth Amendment — Search & Seizure",
+    sections: [
+      {
+        issue: "Is there a 'search' under the Fourth Amendment?",
+        rule: "Government conduct constitutes a 'search' if it (1) violates a person's reasonable expectation of privacy (Katz two-part test), OR (2) constitutes a physical trespass on a constitutionally protected area (persons, houses, papers, effects) for the purpose of obtaining information (Jones).",
+        elements: [
+          "Katz Test: (a) Person exhibited an actual (subjective) expectation of privacy; AND (b) society recognizes that expectation as objectively reasonable",
+          "Trespass Test (Jones): Government physically intruded on protected area + purpose was to gather information"
+        ],
+        triggers: ["Electronic surveillance", "Thermal imaging of home", "GPS tracking", "Cell phone location data", "Dog sniff at front door", "Aerial surveillance"],
+        distinctions: [
+          "Home gets highest protection — 'all details are intimate details' (Kyllo). Sense-enhancing tech aimed at the home = search if tech is not in general public use.",
+          "Public movements for short periods ≠ search. But comprehensive tracking (6+ days of CSLI) = search (Carpenter). Third-party doctrine does NOT apply to automatically generated digital records.",
+          "Open fields ≠ protected (Oliver). Curtilage = protected like the home (Dunn four-factor test: proximity, enclosure, use, steps to protect).",
+          "Dog sniff of car during lawful stop ≠ search (Place/Caballes). Dog sniff on front porch of home = search under trespass theory (Jardines)."
+        ],
+        cases: ["Katz v. United States", "Kyllo v. United States", "Carpenter v. United States", "Riley v. California"]
+      },
+      {
+        issue: "Is there a 'seizure' under the Fourth Amendment?",
+        rule: "A person is 'seized' when, by means of physical force or show of authority, a reasonable person would not feel free to leave or to decline the officer's request and terminate the encounter.",
+        elements: [
+          "Physical force applied = seizure (even momentary)",
+          "Show of authority + submission by suspect = seizure",
+          "If suspect does not submit to show of authority, no seizure occurs until physical force is used (Hodari D.)"
+        ],
+        triggers: ["Traffic stop", "Pedestrian encounter", "Terry stop", "Arrest"],
+        distinctions: [
+          "Consensual encounter (officer approaches, asks questions) ≠ seizure — no Fourth Amendment implications.",
+          "Terry stop (brief, investigatory) = seizure requiring reasonable suspicion.",
+          "Formal arrest = seizure requiring probable cause.",
+          "Traffic stop = seizure of driver AND passengers (Brendlin v. California)."
+        ],
+        cases: ["Terry v. Ohio"]
+      },
+      {
+        issue: "Was there probable cause?",
+        rule: "Probable cause exists where the facts and circumstances within the officer's knowledge, and of which they have reasonably trustworthy information, are sufficient to warrant a person of reasonable caution to believe that an offense has been or is being committed (totality of circumstances). Gates.",
+        elements: [
+          "Totality of the circumstances — practical, common-sense standard (Gates)",
+          "Not quantifiable — no fixed percentage; 'fair probability' required",
+          "Objective standard — actual subjective intent of officer irrelevant (Whren)",
+          "Informant tips evaluated under totality: veracity + reliability + basis of knowledge; deficiency in one can be offset by strength in others (Gates)"
+        ],
+        triggers: ["Warrant application", "Warrantless arrest", "Automobile search", "Informant tip"],
+        distinctions: [
+          "Probable cause > reasonable suspicion (Terry stops) but < beyond a reasonable doubt (conviction).",
+          "Anonymous tip alone rarely sufficient — corroboration of predictive details strengthens it (Gates).",
+          "Collective knowledge doctrine: PC can be based on aggregate info known to law enforcement team, not just arresting officer.",
+          "Stale information can defeat PC — must show continuing probable cause at time of search."
+        ],
+        cases: ["Illinois v. Gates"]
+      },
+      {
+        issue: "Is a warrant required? (and exceptions)",
+        rule: "Searches and seizures inside a home without a warrant are presumptively unreasonable. However, numerous exceptions permit warrantless searches when obtaining a warrant is impractical and the circumstances justify the intrusion.",
+        elements: [
+          "Default: warrant required (especially for homes)",
+          "Burden on government to show an exception applies",
+          "Exceptions: SITA, automobile, exigent circumstances, consent, plain view, inventory, Terry frisk, special needs, border"
+        ],
+        triggers: ["Home entry", "Traffic stop search", "Arrest at scene", "Emergency/hot pursuit", "Consent given"],
+        distinctions: [
+          "SEARCH INCIDENT TO ARREST (SITA): Person = full search categorical (Robinson). Grab area = wingspan (Chimel). Vehicle = only if (1) arrestee unsecured and within reach, OR (2) reasonable to believe evidence of offense of arrest in car (Gant). Cell phone data = warrant required (Riley).",
+          "AUTOMOBILE EXCEPTION: If PC exists, may search entire vehicle + any container that could hold the object of the search. No warrant needed due to mobility + reduced expectation of privacy.",
+          "EXIGENT CIRCUMSTANCES: Hot pursuit, imminent destruction of evidence, risk to safety. Police cannot CREATE the exigency (King).",
+          "CONSENT: Voluntary under totality of circumstances. No requirement to tell suspect they can refuse (Schneckloth). Co-occupant physically present who objects = no consent search (Randolph). Objector removed = remaining occupant can consent (Fernandez).",
+          "PLAIN VIEW: Officer lawfully present + incriminating character immediately apparent + lawful access to object."
+        ],
+        cases: ["Chimel v. California", "Arizona v. Gant", "Riley v. California", "New Jersey v. T.L.O."]
+      },
+      {
+        issue: "Does the exclusionary rule apply?",
+        rule: "Evidence obtained in violation of the Fourth Amendment must be excluded from the prosecution's case-in-chief (Mapp), along with all derivative evidence ('fruit of the poisonous tree,' Wong Sun) — unless an exception applies.",
+        elements: [
+          "Primary evidence: directly obtained through illegal search/seizure → excluded (Mapp/Weeks)",
+          "Derivative evidence: obtained indirectly as a result of the illegality → excluded unless attenuated (Wong Sun)",
+          "Standing: only the person whose own 4th Amendment rights were violated may invoke the rule (Rakas)"
+        ],
+        triggers: ["Motion to suppress", "Warrantless search", "Defective warrant", "Illegal arrest leading to confession"],
+        distinctions: [
+          "GOOD FAITH EXCEPTION (Leon): Evidence admissible if officers reasonably relied on (1) a warrant later found invalid, (2) binding appellate precedent later overruled (Davis), (3) a statute later struck down (Krull), or (4) negligent database error (Herring).",
+          "FRUIT OF THE POISONOUS TREE exceptions: (1) Attenuation — connection between illegality and evidence is remote (Wong Sun factors: temporal proximity, intervening circumstances, flagrancy of violation); (2) Independent source; (3) Inevitable discovery (Nix v. Williams).",
+          "Rule does NOT apply to: grand jury proceedings, civil cases, deportation hearings, parole revocation, impeachment of defendant's testimony.",
+          "Knock-and-announce violation → no exclusion (Hudson v. Michigan) — costs outweigh deterrence benefits."
+        ],
+        cases: ["Mapp v. Ohio", "Weeks v. United States", "United States v. Leon", "Wong Sun v. United States"]
+      },
+      {
+        issue: "Was a Terry stop/frisk justified?",
+        rule: "An officer may briefly stop a person for investigation if the officer has reasonable suspicion, supported by specific and articulable facts, that criminal activity is afoot. A protective frisk is permitted if the officer reasonably believes the suspect is armed and dangerous. Terry v. Ohio.",
+        elements: [
+          "STOP: Reasonable suspicion of criminal activity (less than PC, more than hunch)",
+          "Based on specific, articulable facts + rational inferences",
+          "FRISK: Separate reasonable belief suspect is armed and presently dangerous",
+          "Frisk limited to pat-down of outer clothing for weapons only — not a general evidence search"
+        ],
+        triggers: ["Suspicious behavior observed", "High crime area + evasive conduct", "Bulge in clothing", "Informant tip + corroboration", "Traffic stop"],
+        distinctions: [
+          "Flight from police in high-crime area can contribute to RS (Wardlow), but is not sufficient alone.",
+          "Anonymous tip: must predict future behavior to be reliable (J.L. — bare anonymous tip of gun insufficient).",
+          "If frisk reveals non-weapon contraband by 'plain feel' (immediately apparent), officer may seize it (Dickerson).",
+          "Terry stop cannot be indefinite — must be brief. Extended detention approaches de facto arrest requiring PC.",
+          "Officer may request ID during Terry stop in states with stop-and-identify laws (Hiibel)."
+        ],
+        cases: ["Terry v. Ohio"]
+      }
+    ]
+  },
+  {
+    topic: "Fifth Amendment — Self-Incrimination",
+    sections: [
+      {
+        issue: "Are Miranda warnings required?",
+        rule: "Prior to custodial interrogation, police must inform suspects of their rights: (1) right to remain silent, (2) anything said can be used against them, (3) right to an attorney, (4) right to appointed attorney if indigent. Statements obtained without these warnings are inadmissible in the prosecution's case-in-chief. Miranda v. Arizona.",
+        elements: [
+          "CUSTODY: Would a reasonable person in the suspect's position feel free to terminate the encounter and leave? Consider totality: location, duration, degree of restraint, statements by officers.",
+          "INTERROGATION: Express questioning OR its functional equivalent — words or actions police should know are reasonably likely to elicit an incriminating response (Innis)."
+        ],
+        triggers: ["Arrest + questioning", "Stationhouse interrogation", "Questioning in police car", "Undercover officer in jail cell (but see Perkins — no Miranda needed)"],
+        distinctions: [
+          "Traffic stop usually ≠ custody (Berkemer — but Miranda required if 'arrested' during stop).",
+          "Prison inmate questioned about outside crime: custody depends on whether additional restraint imposed beyond normal incarceration (Howes v. Fields).",
+          "Booking questions (name, address, DOB) = routine exception, not interrogation.",
+          "Voluntary statements not in response to interrogation = admissible even without Miranda.",
+          "Public safety exception: questions reasonably prompted by concern for public safety need not be preceded by warnings (Quarles — 'where's the gun?')."
+        ],
+        cases: ["Miranda v. Arizona", "Berghuis v. Thompkins", "Escobedo v. Illinois"]
+      },
+      {
+        issue: "Was there a valid Miranda waiver or invocation?",
+        rule: "A suspect may waive Miranda rights, but the waiver must be voluntary, knowing, and intelligent. To invoke the right to silence or counsel, the suspect must do so unambiguously.",
+        elements: [
+          "WAIVER: Can be express or implied. Making an uncoerced statement after receiving and understanding warnings = implied waiver (Thompkins).",
+          "INVOCATION OF SILENCE: Must be unambiguous. Merely remaining silent ≠ invocation (Thompkins).",
+          "INVOCATION OF COUNSEL: Must be unambiguous. All questioning must cease until counsel is provided or suspect reinitiates (Edwards v. Arizona).",
+          "Once counsel invoked, police cannot reinitiate interrogation about ANY offense (Minnick), but 14-day break in custody allows fresh attempt (Shatzer)."
+        ],
+        triggers: ["Suspect says 'I want a lawyer'", "Suspect says 'maybe I should talk to a lawyer'", "Suspect remains silent for extended period", "Suspect answers some questions but not others"],
+        distinctions: [
+          "Ambiguous reference to counsel ('maybe I need a lawyer') = officers may ask clarifying questions but need not stop (Davis).",
+          "'I want a lawyer' = unambiguous — all interrogation must cease (Edwards).",
+          "Silence for 2 hours 45 minutes then answering one question = implied waiver, NOT invocation (Thompkins). Critics: 'suspect must speak to invoke right to remain silent.'",
+          "Deliberate two-step (question first, warn later, re-question) = inadmissible if designed to undermine Miranda (Seibert). But if officer acts in good faith, second warned statement may be admissible (Elstad)."
+        ],
+        cases: ["Berghuis v. Thompkins", "Miranda v. Arizona"]
+      }
+    ]
+  },
+  {
+    topic: "Sixth Amendment — Right to Counsel",
+    sections: [
+      {
+        issue: "Does the defendant have a right to appointed counsel?",
+        rule: "The Sixth Amendment guarantees the right to counsel in all criminal prosecutions. Indigent defendants have the right to court-appointed counsel in any case where imprisonment is actually imposed (Gideon for felonies; Argersinger for misdemeanors with jail time; Scott — no right if no actual imprisonment).",
+        elements: [
+          "Charged with a felony → always entitled to appointed counsel (Gideon)",
+          "Charged with a misdemeanor → entitled if actually sentenced to jail (Argersinger/Scott)",
+          "Right attaches at initiation of adversarial judicial proceedings (indictment, information, arraignment, preliminary hearing)"
+        ],
+        triggers: ["Felony charge + indigent defendant", "Misdemeanor with potential jail time", "First court appearance", "Arraignment"],
+        distinctions: [
+          "Right to counsel at trial vs. right to counsel at 'critical stages' (preliminary hearing, arraignment, post-indictment lineup, sentencing, first appeal of right).",
+          "No right to appointed counsel for: discretionary appeals, post-conviction proceedings, civil cases, probation/parole revocation (usually).",
+          "Right to self-representation exists if waiver is knowing and intelligent (Faretta), but no right to hybrid representation."
+        ],
+        cases: ["Gideon v. Wainwright", "Powell v. Alabama"]
+      },
+      {
+        issue: "Was counsel constitutionally ineffective?",
+        rule: "To prevail on an ineffective assistance of counsel claim, a defendant must show: (1) counsel's performance was deficient — falling below an objective standard of reasonableness; AND (2) the deficient performance prejudiced the defense — there is a reasonable probability that, but for counsel's errors, the result would have been different. Strickland v. Washington.",
+        elements: [
+          "PRONG 1 — DEFICIENT PERFORMANCE: Measured against prevailing professional norms at the time. Strong presumption of reasonableness. Strategic decisions after adequate investigation are virtually unchallengeable.",
+          "PRONG 2 — PREJUDICE: Reasonable probability of different outcome = probability sufficient to undermine confidence in the result. Not 'more likely than not' — lower standard.",
+          "Court may address prongs in either order — if one fails, no need to reach the other."
+        ],
+        triggers: ["Failure to investigate", "Failure to call witnesses", "Bad advice on plea", "Failure to advise on immigration consequences", "Sleeping during trial", "Conflict of interest"],
+        distinctions: [
+          "Strategic decisions after thorough investigation = virtually unchallengeable. Strategic decisions after limited investigation = reasonable only if limitations were themselves reasonable.",
+          "Failure to advise noncitizen about deportation consequences of guilty plea = deficient performance per se when consequence is clear from statute (Padilla).",
+          "Plea context: prejudice = reasonable probability defendant would have gone to trial (Hill v. Lockhart) or rejected a plea offer (Lafler/Frye).",
+          "Conflict of interest: if actual conflict adversely affected performance, prejudice is presumed (Cuyler v. Sullivan).",
+          "Per se ineffective (no Strickland needed): complete denial of counsel at critical stage, attorney with actual conflict who actively represents competing interests."
+        ],
+        cases: ["Strickland v. Washington", "Padilla v. Kentucky"]
+      },
+      {
+        issue: "Was the Massiah right to counsel violated?",
+        rule: "Once adversarial judicial proceedings have begun, the government may not deliberately elicit incriminating statements from the accused outside the presence of counsel. Massiah v. United States.",
+        elements: [
+          "Formal proceedings must have been initiated (indictment, arraignment, etc.)",
+          "Government must have 'deliberately elicited' the statements (not just passively listened)",
+          "Statements obtained in the absence of counsel",
+          "Right is offense-specific — applies only to charged offense (McNeil v. Wisconsin)"
+        ],
+        triggers: ["Informant placed in cell after indictment", "Undercover agent questions indicted defendant", "Co-defendant cooperating with government"],
+        distinctions: [
+          "Deliberate elicitation (Massiah violation) vs. passive listening by 'listening post' (no violation — Kuhlmann v. Wilson).",
+          "Massiah is offense-specific: police may question an indicted defendant about uncharged offenses without violating 6th Amendment (Texas v. Cobb — but 'closely related' offenses may be covered).",
+          "Massiah vs. Miranda: Miranda = 5th Amendment, applies in custody regardless of charges. Massiah = 6th Amendment, applies after formal charges regardless of custody."
+        ],
+        cases: ["Massiah v. United States"]
+      }
+    ]
+  },
+  {
+    topic: "Fourteenth Amendment — Due Process",
+    sections: [
+      {
+        issue: "Did the prosecution suppress material exculpatory evidence?",
+        rule: "The prosecution violates due process by suppressing evidence favorable to the accused where the evidence is material to guilt or punishment, regardless of the prosecution's good or bad faith. Brady v. Maryland.",
+        elements: [
+          "Evidence is favorable to the accused (exculpatory OR impeachment — Giglio)",
+          "Evidence was suppressed by the prosecution (withheld, whether intentionally or inadvertently)",
+          "Evidence is material: reasonable probability that disclosure would have changed the outcome (Bagley). Materiality assessed cumulatively for all suppressed evidence (Kyles)."
+        ],
+        triggers: ["Prosecution witness has prior inconsistent statement", "Co-defendant confession exculpating defendant", "Undisclosed plea deal with witness", "Police report contradicting trial testimony"],
+        distinctions: [
+          "Brady applies regardless of whether defense requested the evidence — duty exists independent of request.",
+          "Includes impeachment evidence: undisclosed deals with witnesses, prior convictions of witnesses, benefits given to cooperating witnesses (Giglio).",
+          "Materiality is NOT 'would it have changed the verdict' — it's whether it 'undermines confidence in the outcome' (lower standard).",
+          "Brady obligation extends to evidence known to police, not just prosecutors (Kyles — prosecution team has duty to learn of favorable evidence known to others in government)."
+        ],
+        cases: ["Brady v. Maryland"]
+      },
+      {
+        issue: "Was the burden of proof met?",
+        rule: "Due process requires the prosecution to prove every element of the charged offense beyond a reasonable doubt. In re Winship. This applies to adults and juveniles facing potential incarceration.",
+        elements: [
+          "Beyond a reasonable doubt standard applies to every fact necessary to constitute the crime",
+          "Applies in both adult criminal cases and juvenile delinquency proceedings (Winship)",
+          "Sufficiency review (Jackson v. Virginia): viewing evidence in light most favorable to prosecution, could any rational trier of fact have found all elements beyond a reasonable doubt?"
+        ],
+        triggers: ["Sufficiency of evidence challenge", "Jury instruction on burden of proof", "Juvenile adjudication"],
+        distinctions: [
+          "Reasonable doubt standard applies to elements of the offense, not to affirmative defenses (states may allocate burden of proving affirmative defenses to defendant).",
+          "Any fact that increases maximum penalty = element that must be found by jury beyond reasonable doubt (Apprendi/Blakely).",
+          "Jackson standard for reviewing sufficiency is deferential — not whether reviewing court would have convicted, but whether any rational factfinder could have."
+        ],
+        cases: ["In re Winship", "Jackson v. Virginia"]
+      },
+      {
+        issue: "Was jury selection conducted constitutionally?",
+        rule: "The Equal Protection Clause prohibits the use of peremptory challenges to exclude jurors based on race (Batson) or gender (J.E.B.). A three-step framework governs challenges.",
+        elements: [
+          "Step 1: Defendant establishes prima facie case of discrimination (pattern of strikes, relevant circumstances)",
+          "Step 2: Prosecution must offer a race/gender-neutral explanation for each challenged strike",
+          "Step 3: Court determines whether purposeful discrimination occurred — credibility determination"
+        ],
+        triggers: ["Prosecutor strikes all/most jurors of defendant's race", "Pattern of disproportionate strikes", "Implausible race-neutral explanation"],
+        distinctions: [
+          "Race-neutral explanation need not be persuasive or even plausible at Step 2 — just not inherently discriminatory. The real test is Step 3 (credibility).",
+          "Extends to defense attorneys (McCollum) and civil cases (Edmonson).",
+          "Comparative juror analysis: if prosecutor accepted white jurors with same characteristics used to justify striking Black jurors, inference of pretext (Miller-El, Snyder, Flowers).",
+          "Flowers v. Mississippi (2019): history of discriminatory strikes by same prosecutor across multiple trials = strong evidence of discrimination."
+        ],
+        cases: ["Batson v. Kentucky"]
+      }
+    ]
+  }
+];
+
+let examMode = false;
+
+function toggleExamMode() {
+  examMode = !examMode;
+  document.getElementById('modeToggle').classList.toggle('mode-active', examMode);
+  document.getElementById('modeToggle').innerHTML = examMode
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Case Mode'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Exam Mode';
+
+  if (examMode) {
+    renderExamMode();
+  } else {
+    renderTopicTree();
+    renderCases();
+    document.getElementById('detailPanel').innerHTML = '<div class="empty-state"><div class="icon">&#9878;</div><p>Select a case to view its<br>outline and key details</p></div>';
+  }
+}
+
+function renderExamMode() {
+  const sidebar = document.getElementById('topicTree');
+  sidebar.innerHTML = '';
+
+  // Sidebar: list of issues
+  EXAM_OUTLINE.forEach((topic, ti) => {
+    const item = document.createElement('div');
+    item.className = 'topic-item expanded';
+    item.innerHTML = `<span class="arrow">&#9654;</span> ${topic.topic.split('\u2014')[0].trim()}`;
+    sidebar.appendChild(item);
+
+    const subs = document.createElement('div');
+    subs.className = 'subtopics open';
+    topic.sections.forEach((sec, si) => {
+      const sub = document.createElement('div');
+      sub.className = 'subtopic-item';
+      sub.textContent = sec.issue.replace(/^(Is |Are |Was |Does |Did )/i, '').replace(/\?$/, '');
+      sub.onclick = () => {
+        document.querySelectorAll('.subtopic-item').forEach(s => s.classList.remove('active'));
+        sub.classList.add('active');
+        renderExamIssueDetail(sec);
+        // scroll main panel to this issue
+        const el = document.getElementById('exam-' + ti + '-' + si);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+      subs.appendChild(sub);
+    });
+    sidebar.appendChild(subs);
+  });
+
+  // Main panel: all issues
+  const main = document.getElementById('mainPanel');
+  const title = document.getElementById('topicTitle');
+  const subtitle = document.getElementById('topicSubtitle');
+  title.textContent = 'Issue-Spotting Exam Outline';
+  subtitle.textContent = 'Organized by doctrine and issue — rule statements, elements, triggers, and distinctions';
+
+  const list = document.getElementById('caseList');
+  list.innerHTML = '';
+
+  EXAM_OUTLINE.forEach((topic, ti) => {
+    const topicHeader = document.createElement('div');
+    topicHeader.style.cssText = 'font-family:Lora,serif; font-size:1.1rem; font-weight:600; margin:1.2rem 0 0.5rem; padding-bottom:0.3rem; border-bottom:2px solid var(--accent);';
+    topicHeader.textContent = topic.topic;
+    list.appendChild(topicHeader);
+
+    topic.sections.forEach((sec, si) => {
+      const card = document.createElement('div');
+      card.className = 'exam-issue';
+      card.id = 'exam-' + ti + '-' + si;
+      card.style.cursor = 'pointer';
+      card.onclick = () => renderExamIssueDetail(sec);
+      card.innerHTML = `
+        <h3>${sec.issue}</h3>
+        <div class="exam-rule">${sec.rule.substring(0, 200)}...</div>
+        <div style="margin-top:0.4rem">
+          ${sec.triggers.slice(0, 4).map(t => `<span class="exam-trigger">${t}</span>`).join('')}
+        </div>
+        <div class="exam-cite" style="margin-top:0.4rem">${sec.cases.join(' • ')}</div>
+      `;
+      list.appendChild(card);
+    });
+  });
+
+  // Detail panel: prompt
+  document.getElementById('detailPanel').innerHTML = '<div class="empty-state"><div class="icon">&#9878;</div><p>Click an issue to see<br>the full rule framework</p></div>';
+}
+
+function renderExamIssueDetail(sec) {
+  const panel = document.getElementById('detailPanel');
+  panel.innerHTML = `
+    <div class="detail-header">
+      <h3 style="font-size:1.05rem">${sec.issue}</h3>
+    </div>
+
+    <div class="detail-section">
+      <div class="exam-label">Rule Statement</div>
+      <div class="exam-rule">${sec.rule}</div>
+    </div>
+
+    <div class="detail-section">
+      <div class="exam-label">Elements / Test</div>
+      <ol class="exam-elements">
+        ${sec.elements.map(e => `<li>${e}</li>`).join('')}
+      </ol>
+    </div>
+
+    <div class="detail-section">
+      <div class="exam-label">Fact Pattern Triggers</div>
+      <div>${sec.triggers.map(t => `<span class="exam-trigger">${t}</span>`).join('')}</div>
+    </div>
+
+    <div class="detail-section">
+      <div class="exam-label">Key Distinctions &amp; Analysis Moves</div>
+      ${sec.distinctions.map(d => `<div class="exam-distinction">${d}</div>`).join('')}
+    </div>
+
+    <div class="detail-section">
+      <div class="exam-label">Key Cases</div>
+      <div class="related-cases">
+        ${sec.cases.map(c => `<span class="related-case" onclick="examJumpToCase('${c}')">${c}</span>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function examJumpToCase(name) {
+  examMode = false;
+  document.getElementById('modeToggle').classList.remove('mode-active');
+  document.getElementById('modeToggle').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Exam Mode';
+  const c = DATA.cases.find(cs => cs.name === name);
+  if (c) {
+    selectedCase = c.name;
+    selectedTopic = c.topic;
+    selectedSubtopic = null;
+    renderTopicTree();
+    renderCases();
+    renderDetail(c);
+  }
 }
 
 init();
