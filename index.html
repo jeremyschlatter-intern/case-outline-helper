@@ -421,17 +421,6 @@
     border-color: var(--accent-light);
   }
 
-  .class-note {
-    font-size: 0.82rem;
-    line-height: 1.5;
-    color: var(--text);
-    background: #f0f4ff;
-    border-left: 3px solid #5b7fb5;
-    padding: 0.5rem 0.8rem;
-    border-radius: 0 6px 6px 0;
-    margin-bottom: 0.5rem;
-  }
-
   .search-bar {
     padding: 0.75rem 1.2rem;
     border-bottom: 1px solid var(--border);
@@ -1199,93 +1188,6 @@ const DATA = {
   ]
 };
 
-const CLASS_NOTES = {
-  "Mapp v. Ohio": [
-    "Mapp v. Ohio 1961 - origins of exclusion. The exclusionary rule is incorporated into the 4th and 14th Amendments and thus applies in state court. Police received tip linking Mapp's apartment to something to do with bombing, thought they would find evidence of illegal gambling as well, attempted to enter home without a warrant.",
-    "Right after Mapp v. Ohio, states began to train police officers in the 4th Amendment — exclusionary rule is an integral part of the 4th A. and incorporated in the 14th.",
-    "Mapp-type cases these days: Herring v. US 2009 — when does the exclusionary rule apply? An error of isolated negligence by the police does not justify exclusion. Knock and announce doesn't protect privacy because they are coming in anyways; it protects your property and dignity."
-  ],
-  "Terry v. Ohio": [
-    "Terry stops and frisks: Police must have specific articulable facts and rational inferences from them that provide reasonable suspicion that a crime is being committed. They can compel the suspect to remain temporarily while they investigate and to identify themselves (in states with ID laws). Can handcuff or put in back of police car depending on circumstances.",
-    "Under limited Terry right to search, they don't have a right to search for evidence but only weapons. If police are lawfully in a position from which they view an object, if its incriminating character is immediately apparent, and if the officers have a lawful right of access to the object, they may seize it without a warrant (plain view).",
-    "Opens door for Terry stop for police to stop someone they say is suspicious and make an inquiry into their identity and criminal record. Kansas v. Glover 2020: Knowledge that the owner of the car whose license plate police observed had a revoked license was sufficient reasonable suspicion to investigate.",
-    "98% of blocks in NY had been designated as high crime area; the records of Terry stops became litigation records. United States v. Sokolow 1989 — reasonable suspicion based on profiles: no one factor is enough to show illegal conduct but 'taken together they amount to reasonable suspicion.'"
-  ],
-  "Katz v. United States": [
-    "The Reasonable Expectation of Privacy Test — Katz v. US 1967 (majority). Gambling case, Katz was using telephones from a telephone booth, FBI was investigating Katz and attached listening device to outside of booth. Under Olmstead test this fails — the telephone booth not included in 4th Amendment protections and no physical intrusion.",
-    "Supreme Court says premise that property interest controls right of government to search and seize has been discredited. Most readers at the time assume that the trespass test was over and only test was reasonable expectation test.",
-    "What you knowingly expose to the public is not protected, even in a private space as in Katz. Virtues of REP test: directly focused on the value of privacy rather than property; flexible enough to keep up with rapidly changing expectations. Vices: hard to apply and difficult for law enforcement to predict in novel situations; susceptible to swings in social norms towards surveillance acceptability."
-  ],
-  "Miranda v. Arizona": [
-    "Consent searches: voluntariness + totality (NOT Miranda waiver). Core framework: consent must be voluntary under totality of circumstances. No requirement that police advise 'you can refuse,' though it's a factor. Schneckloth v. Bustamonte (1973).",
-    "Brown v. Illinois 1975 — Fruit of the poisonous tree attenuation doctrine: Miranda warnings were not sufficient to purge the taint of the illegal warrantless arrest in the home given the temporal proximity, and the purpose and flagrancy of the violation.",
-    "Three factors for attenuation: the temporality of the arrest and the confession, the presence of intervening circumstances, and particularly, the purpose and flagrancy of the official misconduct."
-  ],
-  "Carpenter v. United States": [
-    "Expansion of search to deal with digital panopticon problem. Robbers robbing cell phone store, got names and cellphone numbers of other people involved in conspiracy and looked at cell signal location communication. Just looking where his cellphone was — couldn't tell exact location, just what was happening in the public space.",
-    "A few days to track people ok under Carpenter but is 6 days the maximum? Involuntariness of sharing location. Cars under 4th amendment are considered to be a diminished privacy zone because they are so regulated. Most courts have refused to apply Carpenter since cell signal is more comprehensive than tracking car movement.",
-    "These cases, especially Carpenter, suggest that the court is concerned that advances in tech will rapidly erode the kind of privacy protected originally by the 4th Amendment. Collision course with two lines of 4th A. precedent: surveillance in public cases (beepers) and third party cases (telephone company, banks).",
-    "Would similar numbers-dialed data from cell phone companies constitute a search after Carpenter? Police monitoring of a person's location in public space, or review of records in the possession of a third party, constitutes a search if the monitoring is comprehensive enough."
-  ],
-  "Illinois v. Gates": [
-    "Historical context: the social cost of the exclusionary rule in the 1980s — too many courts suppressing evidence and undermining deterrence on war on drugs. Doctrine: probable cause is a practical common sense decision — totality of the circumstances. Implication: no bright line rules as to what supports a finding of probable cause.",
-    "PC is a standard rather than a rule: Totality of circumstances (Illinois v. Gates). Everything is fair game as part of fact pattern. PC cannot be quantified (Maryland v. Pringle). Objective rather than subjective (Whren v. US) — not interested in what is subjectively on the officer's mind.",
-    "Veracity or reliability, plus basis of knowledge: relevant considerations in the totality of circumstances analysis. A deficiency in one may be compensated for by a strong showing as to the others, or by some other indicia of reliability. Corroboration and veracity: because an informant is right about some things, he is probably right about other things."
-  ],
-  "Arizona v. Gant": [
-    "Arizona v. Gant (2009) — Vehicle SITA Narrowed. Two-Prong Test: Police may search the passenger compartment incident to arrest only if (1) arrestee is unsecured and within reaching distance at the time of the search, OR (2) it is reasonable to believe the vehicle contains evidence of the offense of arrest.",
-    "Exam/Hypos distinguishing moves: Prong (1) collapses once suspect is cuffed/locked away. Prong (2) depends on offense of arrest — suspended license usually no evidence in car; drug offense/DUI has stronger 'evidence-of-offense' rationale. 'Reasonable to believe' is often argued as less than PC; fact articulation matters.",
-    "Quick Exam Triggers: Custodial arrest → person search categorical (Robinson); grab-area limited (Chimel). Citation only → no SITA (Knowles). Phone contents → warrant usually required (Riley). Vehicle SITA → only if reachable OR evidence of offense of arrest (Gant)."
-  ],
-  "Riley v. California": [
-    "Riley v. California (2014) — Cell Phone Contents Generally Need a Warrant. Phones are not treated like normal containers for SITA purposes. Police may seize and secure a phone incident to arrest, but generally may not search digital contents without a warrant.",
-    "Why (exam language): Phones contain massive quantities of private data across time (photos, texts, location, browsing). Traditional SITA rationales map poorly onto digital data — digital data is not a weapon. Evidence destruction concerns can be handled by securing the phone (airplane mode/Faraday bag).",
-    "Florida v. Riley 1989 (different case — helicopter surveillance): no minimum height for helicopter, can hover. Helicopter 400 ft over partially covered greenhouse on curtilage — no interference with normal use, no intimate details connected with home."
-  ],
-  "Chimel v. California": [
-    "Chimel v. California (1969) — 'Immediate Control' Limit (Home Arrest). Police had an arrest warrant for burglary (NOT a search warrant). After arrest, officers conducted a thorough search of the home, including multiple rooms, drawers, etc. — searched well beyond any realistic reach.",
-    "Holding: After a lawful arrest, police may search the arrestee's person and the area within his immediate control (area from which he might gain a weapon or destroy evidence). They may NOT search the entire house just because an arrest occurred there.",
-    "Arrest warrant ≠ search warrant (important line for home arrests). 'Immediate control' depends on practical access at the time (not theoretical). Strong defense facts: arrestee already restrained/removed; search of other rooms; rummaging drawers/containers far away."
-  ],
-  "Weeks v. United States": [
-    "Weeks v. US 1914 — origins of exclusion. Weeks was seized for evidence from his house made during warrantless searches. The 4th Amendment does not permit the government to illegally seize the defendant's letters and papers without a warrant and then seek to prosecute him with that evidence. Applied only in federal court.",
-    "Weeks established the exclusionary rule for federal courts. Extended to states in Mapp v. Ohio (1961). The rationale is that without exclusion, the 4th Amendment becomes meaningless."
-  ],
-  "United States v. Leon": [
-    "US v. Leon 1984 — Good faith reliance on a warrant. If you get a warrant and court decides later that there wasn't enough evidence for probable cause, if reliance on warrant was in good faith, evidence is not excluded. The exclusionary rule's sole purpose is deterrence of police misbehavior.",
-    "Constitutional theories of the exclusionary rule: (1) integral part of 4th A. which binds not just the police but also the courts and legislatures; (2) required by intersection of the 4th and 5th Amendments to prevent compelled testimony; (3) prudential court-made rule to protect the 4th A. by deterring violations."
-  ],
-  "Kyllo v. United States": [
-    "Heat: Kyllo v. U.S 2001 — Was a heat scan of Kyllo's house from across the street a search? Trespass? Clearly not a trespass (heat is escaping). REP? People wouldn't expect others to know the thermal image of the inside of their home.",
-    "Protecting the home is important — is the tech showing us something that couldn't be detected somehow else without intruding into the home? 'Obtaining by sense enhancing tech any info regarding the interior of the home that would not otherwise be obtained without intrusion constitutes a search.' 'In the home, all details are intimate details.'",
-    "Scalia: if technology is emerging we should get ahead of it so it can never rise to the level of a threat to privacy. Rule must take into account more sophisticated systems. Dissent's 'off the wall' approach."
-  ],
-  "Massiah v. United States": [
-    "Massiah doctrine: once formal proceedings begin, the government cannot deliberately elicit incriminating statements from the accused without counsel present. Applies even to undercover agents and informants. The right to counsel attaches at initiation of formal adversarial proceedings.",
-    "Brewer v. Williams (1977) — the 'Christian burial speech' case — refined the Massiah doctrine. United States v. Henry (1980) — jail cellmate planted by government. Kuhlmann v. Wilson (1986) — passive vs. active informants distinction."
-  ],
-  "Wong Sun v. United States": [
-    "Wong Sun — fruit of the poisonous tree doctrine. Evidence obtained as an indirect result of an unconstitutional search must be suppressed unless the connection is 'so attenuated as to dissipate the taint.' Three attenuation factors from Brown v. Illinois: temporal proximity, intervening circumstances, and purpose/flagrancy of the violation.",
-    "Wong Sun's voluntary confession after release was sufficiently attenuated — 'break in the causal chain.' But Toy's statements and Yee's heroin were fruit of the illegal arrest."
-  ],
-  "Batson v. Kentucky": [
-    "Batson challenge framework for combating racial discrimination in jury selection. Three-step process: (1) defendant shows inference of discrimination, (2) prosecutor gives race-neutral reason, (3) court determines if purposeful discrimination occurred. Extended to gender (J.E.B. v. Alabama) and defense attorneys (Georgia v. McCollum).",
-    "Flowers v. Mississippi (2019) — same prosecutor struck 41 of 42 Black prospective jurors across six trials. Studies consistently show prosecutors continue to disproportionately strike Black jurors despite Batson."
-  ],
-  "Brady v. Maryland": [
-    "Brady disclosure obligation — prosecutors constitutionally required to disclose all material exculpatory and impeachment evidence to the defense. Applies to both exculpatory evidence (evidence of innocence) and impeachment evidence (evidence undermining a witness's credibility) — Giglio v. United States (1972).",
-    "A prosecutor's obligation is to seek justice, not merely to win convictions. 'Society wins not only when the guilty are convicted, but when criminal trials are fair.' Brady violations remain one of the most common grounds for post-conviction relief."
-  ],
-  "Escobedo v. Illinois": [
-    "Critical precursor to Miranda. Established that the right to counsel applies during custodial interrogation. 'No system of criminal justice can, or should, survive if it comes to depend for its continued effectiveness on the citizens' abdication through unawareness of their constitutional rights.'",
-    "Narrow holding limited to suspects who request counsel — soon superseded by Miranda's broader protections. Marked the Court's shift from a voluntariness-based approach to a rights-based approach for interrogation."
-  ],
-  "New Jersey v. T.L.O.": [
-    "School searches: Fourth Amendment applies to searches by public school officials — they are state actors, students don't shed constitutional rights at the schoolhouse gate. But warrant and probable cause requirements are impractical in the school setting.",
-    "Two-part test: search must be (1) justified at its inception (reasonable grounds for suspecting it will turn up evidence of a rule or law violation) AND (2) reasonable in scope (measures reasonably related to objectives, not excessively intrusive given student's age and sex and nature of infraction)."
-  ]
-};
-
 let selectedTopic = null;
 let selectedSubtopic = null;
 let selectedCase = null;
@@ -1460,11 +1362,6 @@ function renderDetail(c) {
       </div>
     </div>` : ''}
 
-    ${CLASS_NOTES[c.name] ? `<div class="detail-section">
-      <h4>Class Notes</h4>
-      ${CLASS_NOTES[c.name].map(n => `<div class="class-note">${n}</div>`).join('')}
-    </div>` : ''}
-
     <div class="detail-section">
       <h4>Your Notes</h4>
       ${hasNote
@@ -1608,13 +1505,6 @@ function exportToWord() {
 
       if (c.relatedCases) {
         html += `<p class="section-label">Related Cases</p><p class="related">${c.relatedCases.join(' &bull; ')}</p>`;
-      }
-
-      if (CLASS_NOTES[c.name]) {
-        html += `<p class="section-label">Class Notes</p>`;
-        CLASS_NOTES[c.name].forEach(n => {
-          html += `<div style="background:#f0f4ff; border-left:3pt solid #5b7fb5; padding:6pt 10pt; margin:4pt 0; font-size:11pt;">${n}</div>`;
-        });
       }
 
       if (notes[c.name]) {
